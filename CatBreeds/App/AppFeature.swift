@@ -9,11 +9,13 @@ struct AppFeature: Reducer {
     struct State: Equatable {
         var selectedTab: AppTab = .breeds
         var breedsList = BreedsListFeature.State()
+        var favorites = FavoritesFeature.State()
     }
 
     enum Action: Equatable {
         case selectedTabChanged(AppTab)
         case breedsList(BreedsListFeature.Action)
+        case favorites(FavoritesFeature.Action)
     }
 
     private let breedsListReducer = BreedsListFeature()
@@ -28,12 +30,19 @@ struct AppFeature: Reducer {
             return .none
 
         case let .breedsList(breedsListAction):
-            return breedsListReducer
+            let effect = breedsListReducer
                 .reduce(
                     into: &state.breedsList,
                     action: breedsListAction
                 )
                 .map(Action.breedsList)
+
+            state.favorites.breeds = state.breedsList.breeds.filter(\.isFavorite)
+
+            return effect
+
+        case .favorites:
+            return .none
         }
     }
 }

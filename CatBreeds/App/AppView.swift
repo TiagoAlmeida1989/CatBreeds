@@ -25,11 +25,18 @@ struct AppView: View {
                 }
                 .tag(AppTab.breeds)
 
-                Text("Favorites")
-                    .tabItem {
-                        Label("Favorites", systemImage: "star.fill")
-                    }
-                    .tag(AppTab.favorites)
+                NavigationStack {
+                    FavoritesView(
+                        store: store.scope(
+                            state: \.favorites,
+                            action: AppFeature.Action.favorites
+                        )
+                    )
+                }
+                .tabItem {
+                    Label("Favorites", systemImage: "star.fill")
+                }
+                .tag(AppTab.favorites)
             }
         }
     }
