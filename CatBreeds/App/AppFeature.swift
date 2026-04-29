@@ -60,7 +60,11 @@ struct AppFeature: Reducer {
                     }
                 )
 
-            case .breedsResponse(.success), .task, .loadNextPageIfNeeded, .searchTextChanged, .breedsResponse(.failure):
+            case .breedsResponse(.success),
+                    .task, .loadNextPageIfNeeded,
+                    .searchTextChanged,
+                    .retryButtonTapped,
+                    .breedsResponse(.failure):
                 let favoriteIDs = Set(state.favorites.breeds.map(\.id))
 
                 state.breedsList.breeds = state.breedsList.breeds.map { breed in

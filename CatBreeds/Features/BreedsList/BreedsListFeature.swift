@@ -3,6 +3,14 @@ import Foundation
 
 struct BreedsListFeature: Reducer {
     struct State: Equatable {
+        enum ViewState: Equatable {
+            case loading
+            case error(String)
+            case emptySearch
+            case empty
+            case content
+        }
+        
         var breeds: [Breed] = []
         var searchText = ""
         var isLoading = false
@@ -23,6 +31,26 @@ struct BreedsListFeature: Reducer {
                 $0.name.localizedCaseInsensitiveContains(searchText)
             }
         }
+        
+        var viewState: ViewState {
+            if isLoading && breeds.isEmpty {
+                return .loading
+            }
+
+            if let errorMessage, breeds.isEmpty {
+                return .error(errorMessage)
+            }
+
+            if filteredBreeds.isEmpty && isSearching {
+                return .emptySearch
+            }
+
+            if filteredBreeds.isEmpty {
+                return .empty
+            }
+
+            return .content
+        }
     }
 
     enum Action: Equatable {
@@ -31,6 +59,7 @@ struct BreedsListFeature: Reducer {
         case searchTextChanged(String)
         case loadNextPageIfNeeded(Breed)
         case favoriteButtonTapped(Breed.ID)
+        case retryButtonTapped
     }
 
     @Dependency(\.breedsClient) var breedsClient
@@ -116,6 +145,27 @@ struct BreedsListFeature: Reducer {
                     await send(.breedsResponse(.failure(.requestFailed)))
                 }
             }
+            
+        case .retryButtonTapped:
+            state.breeds = []
+            state.currentPage = 0
+            state.hasNextPage = true
+            state.errorMessage = nil
+            state.isLoading = true
+
+            let page = state.currentPage
+            let limit = state.pageSize
+
+            return .run { send in
+                do {
+                    try await Task.sleep(nanoseconds: 700_000_000)
+                    let page = try await breedsClient.fetchBreeds(page, limit)
+                    await send(.breedsResponse(.success(page)))
+                } catch {
+                    await send(.breedsResponse(.failure(.requestFailed)))
+                }
+            }
+
         }
     }
 }

@@ -23,7 +23,11 @@ struct DefaultBreedsRepository: BreedsRepository {
                 limit: limit
             )
 
-            if page == 0 {
+            guard page == 0 else {
+                return remotePage
+            }
+
+            do {
                 try await localDataSource.saveBreeds(
                     remotePage.breeds,
                     page: page
@@ -31,13 +35,18 @@ struct DefaultBreedsRepository: BreedsRepository {
 
                 let cachedBreeds = try await localDataSource.fetchBreeds(page: page)
 
+                guard !cachedBreeds.isEmpty else {
+                    return remotePage
+                }
+
                 return BreedsPage(
                     breeds: cachedBreeds,
                     hasNextPage: remotePage.hasNextPage
                 )
+            } catch {
+                return remotePage
             }
 
-            return remotePage
         } catch {
             guard page == 0 else {
                 throw error
