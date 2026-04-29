@@ -38,6 +38,9 @@ struct AppView: View {
                 }
                 .tag(AppTab.favorites)
             }
+            .task {
+                await viewStore.send(.task).finish()
+            }
         }
     }
 }
