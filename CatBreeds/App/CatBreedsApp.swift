@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import ComposableArchitecture
 
 @main
@@ -13,5 +14,6 @@ struct CatBreedsApp: App {
                 }
             )
         }
+        .modelContainer(SwiftDataStack.shared)
     }
 }
