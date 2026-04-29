@@ -19,6 +19,7 @@ struct AppFeature: Reducer {
     }
 
     private let breedsListReducer = BreedsListFeature()
+    private let favoritesReducer = FavoritesFeature()
 
     func reduce(
         into state: inout State,
@@ -41,8 +42,23 @@ struct AppFeature: Reducer {
 
             return effect
 
-        case .favorites:
-            return .none
+        case let .favorites(favoritesAction):
+            let effect = favoritesReducer
+                .reduce(
+                    into: &state.favorites,
+                    action: favoritesAction
+                )
+                .map(Action.favorites)
+
+            state.breedsList.breeds = state.breedsList.breeds.map { breed in
+                var updatedBreed = breed
+                updatedBreed.isFavorite = state.favorites.breeds.contains {
+                    $0.id == breed.id
+                }
+                return updatedBreed
+            }
+
+            return effect
         }
     }
 }

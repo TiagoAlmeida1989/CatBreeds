@@ -11,10 +11,18 @@ struct FavoritesFeature: Reducer {
         }
     }
 
-    enum Action: Equatable {}
+    enum Action: Equatable {
+        case favoriteButtonTapped(Breed.ID)
+    }
 
     func reduce(
         into state: inout State,
         action: Action
-    ) -> Effect<Action> {}
+    ) -> Effect<Action> {
+        switch action {
+        case let .favoriteButtonTapped(id):
+            state.breeds.removeAll { $0.id == id }
+            return .none
+        }
+    }
 }

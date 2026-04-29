@@ -15,22 +15,32 @@ struct FavoritesView: View {
                 }
 
                 ForEach(viewStore.breeds) { breed in
-                    NavigationLink(value: breed.id) {
+                    NavigationLink(value: breed) {
                         BreedRowView(
                             breed: breed,
-                            onFavoriteTap: {}
+                            onFavoriteTap: {
+                                viewStore.send(.favoriteButtonTapped(breed.id))
+                            }
                         )
                     }
                 }
             }
             .navigationTitle("Favorites")
-            .navigationDestination(for: Breed.ID.self) { breedID in
-                if let breed = viewStore.breeds.first(where: { $0.id == breedID }) {
-                    BreedDetailView(
-                        breed: breed,
-                        onFavoriteTap: {}
-                    )
-                }
+            .navigationDestination(for: Breed.self) { selectedBreed in
+                let breed = viewStore.breeds.first {
+                    $0.id == selectedBreed.id
+                } ?? {
+                    var removedBreed = selectedBreed
+                    removedBreed.isFavorite = false
+                    return removedBreed
+                }()
+
+                BreedDetailView(
+                    breed: breed,
+                    onFavoriteTap: {
+                        viewStore.send(.favoriteButtonTapped(breed.id))
+                    }
+                )
             }
         }
     }
