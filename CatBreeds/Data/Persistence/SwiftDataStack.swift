@@ -4,7 +4,8 @@ enum SwiftDataStack {
     @MainActor
     static let shared: ModelContainer = {
         let schema = Schema([
-            FavoriteBreedEntity.self
+            FavoriteBreedEntity.self,
+            CachedBreedEntity.self
         ])
 
         let configuration = ModelConfiguration(

@@ -13,11 +13,18 @@ extension BreedsClient: DependencyKey {
                 requestBuilder: DefaultRequestBuilder()
             )
 
-            let dataSource = await DefaultCatBreedsRemoteDataSource(
+            let remoteDataSource = await DefaultCatBreedsRemoteDataSource(
                 apiClient: apiClient
             )
 
-            return try await dataSource.fetchBreeds(
+            let localDataSource = await SwiftDataBreedsLocalDataSource()
+
+            let repository = await DefaultBreedsRepository(
+                remoteDataSource: remoteDataSource,
+                localDataSource: localDataSource
+            )
+
+            return try await repository.fetchBreeds(
                 page: page,
                 limit: limit
             )
