@@ -12,11 +12,18 @@ struct AppView: View {
                     send: AppFeature.Action.selectedTabChanged
                 )
             ) {
-                Text("Breeds")
-                    .tabItem {
-                        Label("Breeds", systemImage: "cat")
-                    }
-                    .tag(AppTab.breeds)
+                NavigationStack {
+                    BreedsListView(
+                        store: store.scope(
+                            state: \.breedsList,
+                            action: AppFeature.Action.breedsList
+                        )
+                    )
+                }
+                .tabItem {
+                    Label("Breeds", systemImage: "cat")
+                }
+                .tag(AppTab.breeds)
 
                 Text("Favorites")
                     .tabItem {
