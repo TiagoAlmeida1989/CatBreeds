@@ -2,30 +2,21 @@ import SwiftUI
 
 struct BreedRowView: View {
     let breed: Breed
+    let onFavoriteTap: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: breed.image?.url) { phase in
-                switch phase {
-                case let .success(image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-
-                case .failure:
-                    Image(systemName: "photo")
-                        .foregroundStyle(.secondary)
-
-                case .empty:
-                    ProgressView()
-
-                @unknown default:
-                    EmptyView()
-                }
+            
+            // Image
+            AsyncImage(url: breed.image?.url) { image in
+                image.resizable()
+            } placeholder: {
+                Color.gray.opacity(0.2)
             }
-            .frame(width: 64, height: 64)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .frame(width: 60, height: 60)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
 
+            // Texts
             VStack(alignment: .leading, spacing: 4) {
                 Text(breed.name)
                     .font(.headline)
@@ -37,9 +28,14 @@ struct BreedRowView: View {
 
             Spacer()
 
-            Image(systemName: breed.isFavorite ? "star.fill" : "star")
-                .foregroundStyle(.secondary)
+            // ⭐ FAVORITE BUTTON
+            Button(action: onFavoriteTap) {
+                Image(systemName: breed.isFavorite ? "star.fill" : "star")
+                    .font(.title3)
+                    .foregroundStyle(breed.isFavorite ? .yellow : .gray)
+            }
+            .buttonStyle(.plain)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
 }

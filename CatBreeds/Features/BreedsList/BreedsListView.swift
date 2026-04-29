@@ -9,10 +9,15 @@ struct BreedsListView: View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             List {
                 ForEach(viewStore.filteredBreeds) { breed in
-                    BreedRowView(breed: breed)
-                        .onAppear {
-                            viewStore.send(.loadNextPageIfNeeded(breed))
+                    BreedRowView(
+                        breed: breed,
+                        onFavoriteTap: {
+                            viewStore.send(.favoriteButtonTapped(breed.id))
                         }
+                    )
+                    .onAppear {
+                        viewStore.send(.loadNextPageIfNeeded(breed))
+                    }
                 }
 
                 if viewStore.isLoading {

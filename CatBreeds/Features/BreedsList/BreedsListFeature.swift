@@ -23,6 +23,7 @@ struct BreedsListFeature: Reducer {
         case breedsResponse(Result<BreedsPage, APIError>)
         case searchTextChanged(String)
         case loadNextPageIfNeeded(Breed)
+        case favoriteButtonTapped(Breed.ID)
     }
 
     @Dependency(\.breedsClient) var breedsClient
@@ -56,6 +57,14 @@ struct BreedsListFeature: Reducer {
         case .breedsResponse(.failure):
             state.isLoading = false
             state.errorMessage = "Could not load cat breeds. Please try again."
+            return .none
+        
+        case let .favoriteButtonTapped(id):
+            guard let index = state.breeds.firstIndex(where: { $0.id == id }) else {
+                return .none
+            }
+
+            state.breeds[index].isFavorite.toggle()
             return .none
 
         case let .searchTextChanged(searchText):
