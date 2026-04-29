@@ -1,6 +1,6 @@
 import Foundation
 
-struct Lifespan: Equatable, Sendable {
+struct Lifespan: Equatable, Hashable, Sendable {
     let min: Int?
     let max: Int?
 

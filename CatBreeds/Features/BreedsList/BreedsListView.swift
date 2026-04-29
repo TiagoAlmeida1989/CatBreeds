@@ -9,12 +9,14 @@ struct BreedsListView: View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             List {
                 ForEach(viewStore.filteredBreeds) { breed in
-                    BreedRowView(
-                        breed: breed,
-                        onFavoriteTap: {
-                            viewStore.send(.favoriteButtonTapped(breed.id))
-                        }
-                    )
+                    NavigationLink(value: breed.id) {
+                        BreedRowView(
+                            breed: breed,
+                            onFavoriteTap: {
+                                viewStore.send(.favoriteButtonTapped(breed.id))
+                            }
+                        )
+                    }
                     .onAppear {
                         viewStore.send(.loadNextPageIfNeeded(breed))
                     }
@@ -28,6 +30,16 @@ struct BreedsListView: View {
                 if let errorMessage = viewStore.errorMessage {
                     Text(errorMessage)
                         .foregroundStyle(.red)
+                }
+            }
+            .navigationDestination(for: Breed.ID.self) { breedID in
+                if let breed = viewStore.breeds.first(where: { $0.id == breedID }) {
+                    BreedDetailView(
+                        breed: breed,
+                        onFavoriteTap: {
+                            viewStore.send(.favoriteButtonTapped(breed.id))
+                        }
+                    )
                 }
             }
             .navigationTitle("Cat Breeds")

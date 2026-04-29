@@ -1,6 +1,6 @@
 import Foundation
 
-struct Breed: Identifiable, Equatable, Sendable {
+struct Breed: Identifiable, Equatable, Hashable, Sendable {
     let id: String
     let name: String
     let origin: String

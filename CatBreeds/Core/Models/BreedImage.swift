@@ -1,6 +1,6 @@
 import Foundation
 
-struct BreedImage: Equatable, Sendable {
+struct BreedImage: Equatable, Hashable, Sendable {
     let id: String?
     let url: URL?
     let width: Int?
