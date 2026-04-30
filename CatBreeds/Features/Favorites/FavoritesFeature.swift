@@ -4,11 +4,20 @@ struct FavoritesFeature: Reducer {
     struct State: Equatable {
         var breeds: [Breed] = []
 
+        var viewState: ViewState {
+            breeds.isEmpty ? .empty : .content
+        }
+
         var averageLifespan: Double? {
             let values = breeds.compactMap(\.lifeSpan.average)
             guard !values.isEmpty else { return nil }
             return values.reduce(0, +) / Double(values.count)
         }
+    }
+
+    enum ViewState: Equatable {
+        case empty
+        case content
     }
 
     enum Action: Equatable {
