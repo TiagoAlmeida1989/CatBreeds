@@ -5,6 +5,7 @@ import SwiftData
 final class CachedBreedEntity {
     @Attribute(.unique) var id: String
     var page: Int
+    var position: Int
     var name: String
     var origin: String
     var temperament: String
@@ -16,9 +17,10 @@ final class CachedBreedEntity {
     var imageWidth: Int?
     var imageHeight: Int?
 
-    init(breed: Breed, page: Int) {
+    init(breed: Breed, page: Int, position: Int) {
         self.id = breed.id
         self.page = page
+        self.position = position
         self.name = breed.name
         self.origin = breed.origin
         self.temperament = breed.temperament

@@ -6,11 +6,12 @@ struct BreedsListView: View {
 
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
-            Group {
+            List {
                 switch viewStore.viewState {
                 case .loading:
                     ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(maxWidth: .infinity, minHeight: 280)
+                        .listRowSeparator(.hidden)
 
                 case let .error(message):
                     ErrorStateView(
@@ -20,6 +21,7 @@ struct BreedsListView: View {
                             viewStore.send(.retryButtonTapped)
                         }
                     )
+                    .listRowSeparator(.hidden)
 
                 case .emptySearch:
                     EmptyStateView(
@@ -27,36 +29,39 @@ struct BreedsListView: View {
                         message: "Try searching for another breed name.",
                         systemImage: "magnifyingglass"
                     )
+                    .listRowSeparator(.hidden)
 
                 case .empty:
                     EmptyStateView(
                         title: "No breeds available",
-                        message: "There are no cat breeds to display yet.",
+                        message: "Pull to refresh and try loading breeds again.",
                         systemImage: "cat"
                     )
+                    .listRowSeparator(.hidden)
 
                 case .content:
-                    List {
-                        ForEach(viewStore.filteredBreeds) { breed in
-                            NavigationLink(value: breed.id) {
-                                BreedRowView(
-                                    breed: breed,
-                                    onFavoriteTap: {
-                                        viewStore.send(.favoriteButtonTapped(breed.id))
-                                    }
-                                )
-                            }
-                            .onAppear {
-                                viewStore.send(.loadNextPageIfNeeded(breed))
-                            }
+                    ForEach(viewStore.filteredBreeds, id: \.id) { breed in
+                        NavigationLink(value: breed.id) {
+                            BreedRowView(
+                                breed: breed,
+                                onFavoriteTap: {
+                                    viewStore.send(.favoriteButtonTapped(breed.id))
+                                }
+                            )
                         }
-
-                        if viewStore.isLoading {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
+                        .onAppear {
+                            viewStore.send(.loadNextPageIfNeeded(breed))
                         }
                     }
+
+                    if viewStore.loadingState == .loadingNextPage {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                    }
                 }
+            }
+            .refreshable {
+                await viewStore.send(.refreshPulled).finish()
             }
             .navigationTitle("Cat Breeds")
             .searchable(

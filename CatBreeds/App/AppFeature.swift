@@ -64,6 +64,7 @@ struct AppFeature: Reducer {
                     .task, .loadNextPageIfNeeded,
                     .searchTextChanged,
                     .retryButtonTapped,
+                    .refreshPulled,
                     .breedsResponse(.failure):
                 let favoriteIDs = Set(state.favorites.breeds.map(\.id))
 

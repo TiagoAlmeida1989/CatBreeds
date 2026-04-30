@@ -11,12 +11,19 @@ struct BreedsListFeature: Reducer {
             case content
         }
         
+        enum LoadingState: Equatable {
+            case idle
+            case loadingInitial
+            case loadingNextPage
+            case refreshing
+            case failed(String)
+        }
+        
         var breeds: [Breed] = []
         var searchText = ""
-        var isLoading = false
-        var errorMessage: String?
         var currentPage = 0
         var hasNextPage = true
+        var loadingState: LoadingState = .idle
 
         let pageSize = 10
 
@@ -33,23 +40,33 @@ struct BreedsListFeature: Reducer {
         }
         
         var viewState: ViewState {
-            if isLoading && breeds.isEmpty {
+            switch loadingState {
+            case .loadingInitial where breeds.isEmpty:
                 return .loading
-            }
 
-            if let errorMessage, breeds.isEmpty {
-                return .error(errorMessage)
-            }
+            case let .failed(message) where breeds.isEmpty:
+                return .error(message)
 
-            if filteredBreeds.isEmpty && isSearching {
-                return .emptySearch
-            }
+            default:
+                if filteredBreeds.isEmpty && isSearching {
+                    return .emptySearch
+                }
 
-            if filteredBreeds.isEmpty {
-                return .empty
-            }
+                if breeds.isEmpty {
+                    return .empty
+                }
 
-            return .content
+                return .content
+            }
+        }
+        
+        var isLoading: Bool {
+            switch loadingState {
+            case .loadingInitial, .loadingNextPage, .refreshing:
+                return true
+            case .idle, .failed:
+                return false
+            }
         }
     }
 
@@ -60,6 +77,7 @@ struct BreedsListFeature: Reducer {
         case loadNextPageIfNeeded(Breed)
         case favoriteButtonTapped(Breed.ID)
         case retryButtonTapped
+        case refreshPulled
     }
 
     @Dependency(\.breedsClient) var breedsClient
@@ -74,8 +92,7 @@ struct BreedsListFeature: Reducer {
                 return .none
             }
 
-            state.isLoading = true
-            state.errorMessage = nil
+            state.loadingState = .loadingInitial
 
             let page = state.currentPage
             let limit = state.pageSize
@@ -88,25 +105,36 @@ struct BreedsListFeature: Reducer {
                     await send(.breedsResponse(.failure(.requestFailed)))
                 }
             }
+        
         case let .breedsResponse(.success(page)):
-            state.isLoading = false
-            state.errorMessage = nil
-            
-            let existingIDs = Set(state.breeds.map(\.id))
-            let newBreeds = page.breeds.filter { !existingIDs.contains($0.id) }
-
-            state.breeds.append(contentsOf: newBreeds)
-            state.hasNextPage = page.hasNextPage && !newBreeds.isEmpty
-
-            if page.hasNextPage {
-                state.currentPage += 1
+            switch state.loadingState {
+            case .loadingInitial, .refreshing:
+                state.breeds = page.breeds
+                state.currentPage = page.hasNextPage ? 1 : 0
+                
+            case .loadingNextPage:
+                let existingIDs = Set(state.breeds.map(\.id))
+                state.breeds.append(contentsOf: page.breeds.filter { !existingIDs.contains($0.id) })
+                
+                if page.hasNextPage {
+                    state.currentPage += 1
+                }
+                
+            default:
+                break
             }
-
+            
+            state.hasNextPage = page.hasNextPage
+            state.loadingState = .idle
             return .none
 
         case .breedsResponse(.failure):
-            state.isLoading = false
-            state.errorMessage = "Could not load cat breeds. Please try again."
+            if state.breeds.isEmpty {
+                state.loadingState = .failed("Could not load cat breeds. Please try again.")
+            } else {
+                state.loadingState = .idle
+            }
+            
             return .none
         
         case let .favoriteButtonTapped(id):
@@ -131,8 +159,7 @@ struct BreedsListFeature: Reducer {
                 return .none
             }
 
-            state.isLoading = true
-            state.errorMessage = nil
+            state.loadingState = .loadingNextPage
 
             let page = state.currentPage
             let limit = state.pageSize
@@ -145,21 +172,33 @@ struct BreedsListFeature: Reducer {
                     await send(.breedsResponse(.failure(.requestFailed)))
                 }
             }
-            
+
         case .retryButtonTapped:
-            state.breeds = []
             state.currentPage = 0
             state.hasNextPage = true
-            state.errorMessage = nil
-            state.isLoading = true
+            state.loadingState = .loadingInitial
 
-            let page = state.currentPage
             let limit = state.pageSize
 
             return .run { send in
                 do {
-                    try await Task.sleep(nanoseconds: 700_000_000)
-                    let page = try await breedsClient.fetchBreeds(page, limit)
+                    let page = try await breedsClient.fetchBreeds(0, limit)
+                    await send(.breedsResponse(.success(page)))
+                } catch {
+                    await send(.breedsResponse(.failure(.requestFailed)))
+                }
+            }
+
+        case .refreshPulled:
+            state.currentPage = 0
+            state.hasNextPage = true
+            state.loadingState = .refreshing
+
+            let limit = state.pageSize
+
+            return .run { send in
+                do {
+                    let page = try await breedsClient.fetchBreeds(0, limit)
                     await send(.breedsResponse(.success(page)))
                 } catch {
                     await send(.breedsResponse(.failure(.requestFailed)))

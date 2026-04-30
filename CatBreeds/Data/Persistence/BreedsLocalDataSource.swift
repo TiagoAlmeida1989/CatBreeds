@@ -18,8 +18,14 @@ struct SwiftDataBreedsLocalDataSource: BreedsLocalDataSource {
             let existing = try context.fetch(descriptor)
             existing.forEach { context.delete($0) }
 
-            breeds.forEach {
-                context.insert(CachedBreedEntity(breed: $0, page: page))
+            for (index, breed) in breeds.enumerated() {
+                context.insert(
+                    CachedBreedEntity(
+                        breed: breed,
+                        page: page,
+                        position: index
+                    )
+                )
             }
 
             try context.save()
@@ -32,7 +38,7 @@ struct SwiftDataBreedsLocalDataSource: BreedsLocalDataSource {
 
             let descriptor = FetchDescriptor<CachedBreedEntity>(
                 predicate: #Predicate { $0.page == page },
-                sortBy: [SortDescriptor(\.name)]
+                sortBy: [SortDescriptor(\.position)]
             )
 
             return try context.fetch(descriptor).map(\.domainModel)
