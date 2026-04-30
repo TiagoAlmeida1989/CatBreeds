@@ -18,7 +18,7 @@ struct BreedsListView: View {
                         title: "Unable to load breeds",
                         message: message,
                         retryAction: {
-                            viewStore.send(.retryButtonTapped)
+                            viewStore.send(.retryTapped)
                         }
                     )
                     .listRowSeparator(.hidden)
@@ -40,7 +40,7 @@ struct BreedsListView: View {
                     .listRowSeparator(.hidden)
 
                 case .content:
-                    ForEach(viewStore.filteredBreeds, id: \.id) { breed in
+                    ForEach(viewStore.filteredBreeds) { breed in
                         NavigationLink(value: breed.id) {
                             BreedRowView(
                                 breed: breed,
@@ -54,10 +54,16 @@ struct BreedsListView: View {
                         }
                     }
 
-                    if viewStore.loadingState == .loadingNextPage {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                    }
+                    PaginationFooterView(
+                        loadState: viewStore.loadState,
+                        retryAction: {
+                            if let lastBreed = viewStore.breeds.last {
+                                viewStore.send(.retryNextPageTapped)
+                            }
+                        }
+                    )
+                    .listRowSeparator(.hidden)
+                    
                 }
             }
             .refreshable {

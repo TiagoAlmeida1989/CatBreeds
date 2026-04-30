@@ -39,10 +39,8 @@ struct DefaultBreedsRepository: BreedsRepository {
                     return remotePage
                 }
 
-                return BreedsPage(
-                    breeds: cachedBreeds,
-                    hasNextPage: remotePage.hasNextPage
-                )
+                let result = BreedsPage(breeds: cachedBreeds, hasNextPage: remotePage.hasNextPage)
+                return result
             } catch {
                 return remotePage
             }
@@ -58,9 +56,11 @@ struct DefaultBreedsRepository: BreedsRepository {
                 throw error
             }
 
+            let hasNextPage = cachedBreeds.count == limit
+
             return BreedsPage(
                 breeds: cachedBreeds,
-                hasNextPage: false
+                hasNextPage: hasNextPage
             )
         }
     }

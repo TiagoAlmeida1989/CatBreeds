@@ -22,6 +22,7 @@ struct AppFeature: Reducer {
 
     private let breedsListReducer = BreedsListFeature()
     private let favoritesReducer = FavoritesFeature()
+
     @Dependency(\.favoritesPersistenceClient) var favoritesPersistenceClient
 
     func reduce(
@@ -60,20 +61,14 @@ struct AppFeature: Reducer {
                     }
                 )
 
-            case .breedsResponse(.success),
-                    .task, .loadNextPageIfNeeded,
-                    .searchTextChanged,
-                    .retryButtonTapped,
-                    .refreshPulled,
-                    .breedsResponse(.failure):
-                let favoriteIDs = Set(state.favorites.breeds.map(\.id))
-
-                state.breedsList.breeds = state.breedsList.breeds.map { breed in
-                    var updatedBreed = breed
-                    updatedBreed.isFavorite = favoriteIDs.contains(breed.id)
-                    return updatedBreed
-                }
-
+            case .breedsResponse,
+                 .task,
+                 .loadNextPageIfNeeded,
+                 .searchTextChanged,
+                 .retryTapped,
+                 .retryNextPageTapped,
+                 .refreshPulled:
+                syncFavoritesIntoBreedsList(state: &state)
                 return effect
             }
 
@@ -88,9 +83,11 @@ struct AppFeature: Reducer {
             if case let .favoriteButtonTapped(id) = favoritesAction {
                 state.breedsList.breeds = state.breedsList.breeds.map { breed in
                     var updatedBreed = breed
+
                     if breed.id == id {
                         updatedBreed.isFavorite = false
                     }
+
                     return updatedBreed
                 }
 
@@ -103,7 +100,7 @@ struct AppFeature: Reducer {
             }
 
             return effect
-            
+
         case .task:
             return .run { send in
                 do {
@@ -116,17 +113,21 @@ struct AppFeature: Reducer {
 
         case let .favoritesLoaded(.success(favorites)):
             state.favorites.breeds = favorites
-
-            state.breedsList.breeds = state.breedsList.breeds.map { breed in
-                var updatedBreed = breed
-                updatedBreed.isFavorite = favorites.contains { $0.id == breed.id }
-                return updatedBreed
-            }
-
+            syncFavoritesIntoBreedsList(state: &state)
             return .none
 
         case .favoritesLoaded(.failure):
             return .none
+        }
+    }
+
+    private func syncFavoritesIntoBreedsList(state: inout State) {
+        let favoriteIDs = Set(state.favorites.breeds.map(\.id))
+
+        state.breedsList.breeds = state.breedsList.breeds.map { breed in
+            var updatedBreed = breed
+            updatedBreed.isFavorite = favoriteIDs.contains(breed.id)
+            return updatedBreed
         }
     }
 }
