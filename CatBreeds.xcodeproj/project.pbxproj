@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2295BF312FA254A400C44E12 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 2295BF302FA254A400C44E12 /* ComposableArchitecture */; };
+		22E13B182FA33D4C00872BB1 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 22E13B172FA33D4C00872BB1 /* Nuke */; };
+		22E13B1A2FA33D4C00872BB1 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 22E13B192FA33D4C00872BB1 /* NukeUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,7 +53,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				22E13B1A2FA33D4C00872BB1 /* NukeUI in Frameworks */,
 				2295BF312FA254A400C44E12 /* ComposableArchitecture in Frameworks */,
+				22E13B182FA33D4C00872BB1 /* Nuke in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +116,8 @@
 			name = CatBreeds;
 			packageProductDependencies = (
 				2295BF302FA254A400C44E12 /* ComposableArchitecture */,
+				22E13B172FA33D4C00872BB1 /* Nuke */,
+				22E13B192FA33D4C00872BB1 /* NukeUI */,
 			);
 			productName = CatBreeds;
 			productReference = 2295BE8D2FA239F600C44E12 /* CatBreeds.app */;
@@ -194,6 +200,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				2295BF2F2FA254A400C44E12 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
+				22E13B162FA33D4C00872BB1 /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2295BE8E2FA239F600C44E12 /* Products */;
@@ -584,6 +591,14 @@
 			traits = (
 			);
 		};
+		22E13B162FA33D4C00872BB1 /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.0.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -591,6 +606,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2295BF2F2FA254A400C44E12 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
 			productName = ComposableArchitecture;
+		};
+		22E13B172FA33D4C00872BB1 /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 22E13B162FA33D4C00872BB1 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
+		22E13B192FA33D4C00872BB1 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 22E13B162FA33D4C00872BB1 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

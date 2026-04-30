@@ -1,4 +1,6 @@
 import SwiftUI
+import NukeUI
+import Nuke
 
 struct BreedRowView: View {
     let breed: Breed
@@ -6,17 +8,24 @@ struct BreedRowView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            
-            // Image
-            AsyncImage(url: breed.image?.url) { image in
-                image.resizable()
-            } placeholder: {
-                Color.gray.opacity(0.2)
+
+            LazyImage(url: breed.image?.url) { state in
+                if let image = state.image {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Color.gray.opacity(0.2)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .foregroundStyle(.gray)
+                        }
+                }
             }
+            .priority(.high)
             .frame(width: 60, height: 60)
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
-            // Texts
             VStack(alignment: .leading, spacing: 4) {
                 Text(breed.name)
                     .font(.headline)
@@ -28,7 +37,6 @@ struct BreedRowView: View {
 
             Spacer()
 
-            // ⭐ FAVORITE BUTTON
             Button(action: onFavoriteTap) {
                 Image(systemName: breed.isFavorite ? "star.fill" : "star")
                     .font(.title3)

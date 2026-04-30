@@ -4,6 +4,11 @@ import ComposableArchitecture
 
 @main
 struct CatBreedsApp: App {
+    
+    init() {
+        ImagePipelineClient.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
             AppView(
