@@ -5,7 +5,10 @@ enum AppTab: Hashable {
     case favorites
 }
 
-struct AppFeature: Reducer {
+@Reducer
+struct AppFeature {
+
+    @ObservableState
     struct State: Equatable {
         var selectedTab: AppTab = .breeds
         var breedsList = BreedsListFeature.State()
@@ -20,104 +23,73 @@ struct AppFeature: Reducer {
         case favoritesLoaded(Result<[Breed], PersistenceError>)
     }
 
-    private let breedsListReducer = BreedsListFeature()
-    private let favoritesReducer = FavoritesFeature()
-
     @Dependency(\.favoritesPersistenceClient) var favoritesPersistenceClient
 
-    func reduce(
-        into state: inout State,
-        action: Action
-    ) -> Effect<Action> {
-        switch action {
-        case let .selectedTabChanged(tab):
-            state.selectedTab = tab
-            return .none
+    var body: some Reducer<State, Action> {
+        Scope(state: \.breedsList, action: \.breedsList) {
+            BreedsListFeature()
+        }
 
-        case let .breedsList(breedsListAction):
-            let effect = breedsListReducer
-                .reduce(
-                    into: &state.breedsList,
-                    action: breedsListAction
-                )
-                .map(Action.breedsList)
+        Scope(state: \.favorites, action: \.favorites) {
+            FavoritesFeature()
+        }
 
-            switch breedsListAction {
-            case let .favoriteButtonTapped(id):
+        Reduce { state, action in
+            switch action {
+            case let .selectedTabChanged(tab):
+                state.selectedTab = tab
+                return .none
+
+            case let .breedsList(.favoriteButtonTapped(id)):
                 state.favorites.breeds = state.breedsList.breeds.filter(\.isFavorite)
 
                 guard let breed = state.breedsList.breeds.first(where: { $0.id == id }) else {
-                    return effect
+                    return .none
                 }
 
-                return .merge(
-                    effect,
-                    .run { _ in
-                        if breed.isFavorite {
-                            try await favoritesPersistenceClient.saveFavorite(breed)
-                        } else {
-                            try await favoritesPersistenceClient.removeFavorite(id)
-                        }
-                    }
-                )
-
-            case .breedsResponse,
-                 .task,
-                 .loadNextPageIfNeeded,
-                 .searchTextChanged,
-                 .retryTapped,
-                 .retryNextPageTapped,
-                 .refreshPulled:
-                syncFavoritesIntoBreedsList(state: &state)
-                return effect
-            }
-
-        case let .favorites(favoritesAction):
-            let effect = favoritesReducer
-                .reduce(
-                    into: &state.favorites,
-                    action: favoritesAction
-                )
-                .map(Action.favorites)
-
-            if case let .favoriteButtonTapped(id) = favoritesAction {
-                state.breedsList.breeds = state.breedsList.breeds.map { breed in
-                    var updatedBreed = breed
-
-                    if breed.id == id {
-                        updatedBreed.isFavorite = false
-                    }
-
-                    return updatedBreed
-                }
-
-                return .merge(
-                    effect,
-                    .run { _ in
+                return .run { _ in
+                    if breed.isFavorite {
+                        try await favoritesPersistenceClient.saveFavorite(breed)
+                    } else {
                         try await favoritesPersistenceClient.removeFavorite(id)
                     }
-                )
-            }
-
-            return effect
-
-        case .task:
-            return .run { send in
-                do {
-                    let favorites = try await favoritesPersistenceClient.fetchFavorites()
-                    await send(.favoritesLoaded(.success(favorites)))
-                } catch {
-                    await send(.favoritesLoaded(.failure(.failed)))
                 }
+
+            case .breedsList:
+                syncFavoritesIntoBreedsList(state: &state)
+                return .none
+
+            case let .favorites(.favoriteButtonTapped(id)):
+                state.breedsList.breeds = state.breedsList.breeds.map { breed in
+                    var updatedBreed = breed
+                    if breed.id == id { updatedBreed.isFavorite = false }
+                    return updatedBreed
+                }
+                return .run { _ in
+                    try await favoritesPersistenceClient.removeFavorite(id)
+                }
+
+            case .favorites:
+                return .none
+
+            case .task:
+                return .run { send in
+                    do {
+                        let favorites = try await favoritesPersistenceClient.fetchFavorites()
+                        await send(.favoritesLoaded(.success(favorites)))
+                    } catch {
+                        await send(.favoritesLoaded(.failure(.failed)))
+                    }
+                }
+
+            case let .favoritesLoaded(.success(favorites)):
+                state.favorites.breeds = favorites
+                syncFavoritesIntoBreedsList(state: &state)
+                return .none
+
+            case .favoritesLoaded(.failure):
+                return .none
             }
-
-        case let .favoritesLoaded(.success(favorites)):
-            state.favorites.breeds = favorites
-            syncFavoritesIntoBreedsList(state: &state)
-            return .none
-
-        case .favoritesLoaded(.failure):
-            return .none
         }
     }
 

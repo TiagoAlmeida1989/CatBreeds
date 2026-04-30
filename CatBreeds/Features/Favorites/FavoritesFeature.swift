@@ -1,6 +1,9 @@
 import ComposableArchitecture
 
-struct FavoritesFeature: Reducer {
+@Reducer
+struct FavoritesFeature {
+
+    @ObservableState
     struct State: Equatable {
         var breeds: [Breed] = []
 
@@ -24,14 +27,13 @@ struct FavoritesFeature: Reducer {
         case favoriteButtonTapped(Breed.ID)
     }
 
-    func reduce(
-        into state: inout State,
-        action: Action
-    ) -> Effect<Action> {
-        switch action {
-        case let .favoriteButtonTapped(id):
-            state.breeds.removeAll { $0.id == id }
-            return .none
+    var body: some Reducer<State, Action> {
+        Reduce { state, action in
+            switch action {
+            case let .favoriteButtonTapped(id):
+                state.breeds.removeAll { $0.id == id }
+                return .none
+            }
         }
     }
 }
