@@ -1,6 +1,6 @@
 import Foundation
 
-struct BreedImage: Equatable, Hashable, Sendable {
+struct BreedImage: Hashable, Sendable {
     let id: String?
     let url: URL?
     let width: Int?
@@ -16,5 +16,14 @@ struct BreedImage: Equatable, Hashable, Sendable {
         self.url = url
         self.width = width
         self.height = height
+    }
+}
+
+extension BreedImage: Equatable {
+    nonisolated static func == (lhs: BreedImage, rhs: BreedImage) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.url == rhs.url &&
+        lhs.width == rhs.width &&
+        lhs.height == rhs.height
     }
 }

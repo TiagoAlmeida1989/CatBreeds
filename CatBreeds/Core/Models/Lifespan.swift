@@ -1,6 +1,6 @@
 import Foundation
 
-struct Lifespan: Equatable, Hashable, Sendable {
+struct Lifespan: Hashable, Sendable {
     let min: Int?
     let max: Int?
 
@@ -33,5 +33,11 @@ struct Lifespan: Equatable, Hashable, Sendable {
         case (nil, nil):
             return "Unknown"
         }
+    }
+}
+
+extension Lifespan: Equatable {
+    nonisolated static func == (lhs: Lifespan, rhs: Lifespan) -> Bool {
+        lhs.min == rhs.min && lhs.max == rhs.max
     }
 }
