@@ -1,10 +1,38 @@
 import Foundation
 import ComposableArchitecture
 
-struct BreedsListFeature: Reducer {
+// MARK: - Supporting Types
+
+enum BreedsListLoadState: Equatable {
+    case idle
+    case loading
+    case loadingNextPage
+    case refreshing
+    case failed(String)
+}
+
+enum BreedsListViewState: Equatable {
+    case loading
+    case error(String)
+    case emptySearch
+    case empty
+    case content
+}
+
+enum BreedsListLoadType: Equatable {
+    case initial
+    case refresh
+    case nextPage
+}
+
+// MARK: - Feature
+
+@Reducer
+struct BreedsListFeature {
 
     // MARK: - State
 
+    @ObservableState
     struct State: Equatable {
         var breeds: [Breed] = []
         var searchText = ""
@@ -12,7 +40,7 @@ struct BreedsListFeature: Reducer {
         var nextPage = 0
         var canLoadMore = true
 
-        var loadState: LoadState = .idle
+        var loadState: BreedsListLoadState = .idle
 
         var isSearching: Bool {
             !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -20,12 +48,13 @@ struct BreedsListFeature: Reducer {
 
         var filteredBreeds: [Breed] {
             guard isSearching else { return breeds }
+
             return breeds.filter {
                 $0.name.localizedCaseInsensitiveContains(searchText)
             }
         }
 
-        var viewState: ViewState {
+        var viewState: BreedsListViewState {
             switch loadState {
             case .loading:
                 return .loading
@@ -50,27 +79,7 @@ struct BreedsListFeature: Reducer {
         }
     }
 
-    // MARK: - Load State
-
-    enum LoadState: Equatable {
-        case idle
-        case loading
-        case loadingNextPage
-        case refreshing
-        case failed(String)
-    }
-
-    // MARK: - View State
-
-    enum ViewState: Equatable {
-        case loading
-        case error(String)
-        case emptySearch
-        case empty
-        case content
-    }
-
-    // MARK: - Actions
+    // MARK: - Action
 
     enum Action: Equatable {
         case task
@@ -82,128 +91,131 @@ struct BreedsListFeature: Reducer {
         case searchTextChanged(String)
         case favoriteButtonTapped(Breed.ID)
 
-        case breedsResponse(Result<BreedsPage, APIError>, LoadType)
-    }
-
-    enum LoadType: Equatable {
-        case initial
-        case refresh
-        case nextPage
+        case breedsResponse(Result<BreedsPage, APIError>, BreedsListLoadType)
     }
 
     // MARK: - Dependencies
 
     @Dependency(\.breedsClient) var breedsClient
 
-    // MARK: - Reducer
+    // MARK: - Body
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
+    var body: some Reducer<State, Action> {
+        Reduce { state, action in
+            switch action {
 
-        // MARK: - Initial Load
+            // MARK: - Initial Load
 
-        case .task:
-            guard state.breeds.isEmpty else { return .none }
-
-            state.loadState = .loading
-            return load(page: 0, type: .initial)
-
-        // MARK: - Retry Initial
-
-        case .retryTapped:
-            state.loadState = .loading
-            return load(page: 0, type: .initial)
-
-        // MARK: - Pull to Refresh
-
-        case .refreshPulled:
-            state.loadState = .refreshing
-            return load(page: 0, type: .refresh)
-
-        // MARK: - Pagination
-
-        case let .loadNextPageIfNeeded(breed):
-            guard
-                !state.isSearching,
-                state.canLoadMore,
-                state.loadState == .idle,
-                state.breeds.last?.id == breed.id
-            else {
-                return .none
-            }
-
-            state.loadState = .loadingNextPage
-            return load(page: state.nextPage, type: .nextPage)
-
-        case .retryNextPageTapped:
-            guard
-                !state.isSearching,
-                state.canLoadMore
-            else {
-                return .none
-            }
-
-            state.loadState = .loadingNextPage
-            return load(page: state.nextPage, type: .nextPage)
-
-        // MARK: - Search
-
-        case let .searchTextChanged(text):
-            state.searchText = text
-            return .none
-
-        // MARK: - Favorite
-
-        case let .favoriteButtonTapped(id):
-            guard let index = state.breeds.firstIndex(where: { $0.id == id }) else {
-                return .none
-            }
-
-            state.breeds[index].isFavorite.toggle()
-            return .none
-
-        // MARK: - Response
-
-        case let .breedsResponse(.success(page), loadType):
-
-            switch loadType {
-            case .initial, .refresh:
-                state.breeds = page.breeds
-                state.nextPage = page.hasNextPage ? 1 : 0
-
-            case .nextPage:
-                let existingIDs = Set(state.breeds.map(\.id))
-                let newBreeds = page.breeds.filter { !existingIDs.contains($0.id) }
-
-                state.breeds.append(contentsOf: newBreeds)
-
-                if page.hasNextPage {
-                    state.nextPage += 1
+            case .task:
+                guard state.breeds.isEmpty else {
+                    return .none
                 }
+
+                state.loadState = .loading
+                return load(page: 0, type: .initial)
+
+            // MARK: - Retry Initial
+
+            case .retryTapped:
+                state.loadState = .loading
+                return load(page: 0, type: .initial)
+
+            // MARK: - Pull to Refresh
+
+            case .refreshPulled:
+                state.loadState = .refreshing
+                return load(page: 0, type: .refresh)
+
+            // MARK: - Pagination
+
+            case let .loadNextPageIfNeeded(breed):
+                guard
+                    !state.isSearching,
+                    state.canLoadMore,
+                    state.loadState == .idle,
+                    state.breeds.last?.id == breed.id
+                else {
+                    return .none
+                }
+
+                state.loadState = .loadingNextPage
+                return load(page: state.nextPage, type: .nextPage)
+
+            case .retryNextPageTapped:
+                guard
+                    !state.isSearching,
+                    state.canLoadMore
+                else {
+                    return .none
+                }
+
+                state.loadState = .loadingNextPage
+                return load(page: state.nextPage, type: .nextPage)
+
+            // MARK: - Search
+
+            case let .searchTextChanged(text):
+                state.searchText = text
+                return .none
+
+            // MARK: - Favorite
+
+            case let .favoriteButtonTapped(id):
+                guard let index = state.breeds.firstIndex(where: { $0.id == id }) else {
+                    return .none
+                }
+
+                state.breeds[index].isFavorite.toggle()
+                return .none
+
+            // MARK: - Response Success
+
+            case let .breedsResponse(.success(page), loadType):
+                switch loadType {
+                case .initial, .refresh:
+                    state.breeds = page.breeds
+                    state.nextPage = page.hasNextPage ? 1 : 0
+
+                case .nextPage:
+                    let existingIDs = Set(state.breeds.map(\.id))
+                    let newBreeds = page.breeds.filter {
+                        !existingIDs.contains($0.id)
+                    }
+
+                    state.breeds.append(contentsOf: newBreeds)
+
+                    if page.hasNextPage {
+                        state.nextPage += 1
+                    }
+                }
+
+                state.canLoadMore = page.hasNextPage
+                state.loadState = .idle
+
+                return .none
+
+            // MARK: - Response Failure
+
+            case let .breedsResponse(.failure, loadType):
+                switch loadType {
+                case .initial, .refresh:
+                    state.loadState = .failed("Could not load cat breeds.")
+
+                case .nextPage:
+                    state.loadState = .failed("Could not load more breeds.")
+                }
+
+                return .none
             }
-
-            state.canLoadMore = page.hasNextPage
-            state.loadState = .idle
-
-            return .none
-
-        case .breedsResponse(.failure, let loadType):
-
-            switch loadType {
-            case .initial, .refresh:
-                state.loadState = .failed("Could not load cat breeds.")
-
-            case .nextPage:
-                state.loadState = .failed("Could not load more breeds.")
-            }
-
-            return .none
         }
     }
 
     // MARK: - Private
 
-    private func load(page: Int, type: LoadType) -> Effect<Action> {
+    private func load(
+        page: Int,
+        type: BreedsListLoadType
+    ) -> Effect<Action> {
         .run { send in
             do {
                 let result = try await breedsClient.fetchBreeds(page, 10)

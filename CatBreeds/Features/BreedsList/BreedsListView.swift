@@ -55,11 +55,9 @@ struct BreedsListView: View {
                     }
 
                     PaginationFooterView(
-                        loadState: viewStore.loadState,
+                        state: viewStore.loadState.paginationViewState,
                         retryAction: {
-                            if let lastBreed = viewStore.breeds.last {
-                                viewStore.send(.retryNextPageTapped)
-                            }
+                            viewStore.send(.retryNextPageTapped)
                         }
                     )
                     .listRowSeparator(.hidden)
@@ -89,6 +87,18 @@ struct BreedsListView: View {
             .task {
                 await viewStore.send(.task).finish()
             }
+        }
+    }
+}
+
+// MARK: - Mapping
+
+private extension BreedsListLoadState {
+    var paginationViewState: PaginationFooterView.ViewState {
+        switch self {
+        case .loadingNextPage: .loading
+        case let .failed(message): .failed(message)
+        default: .hidden
         }
     }
 }

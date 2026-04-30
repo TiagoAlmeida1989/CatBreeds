@@ -1,12 +1,19 @@
 import SwiftUI
 
 struct PaginationFooterView: View {
-    let loadState: BreedsListFeature.LoadState
+
+    enum ViewState: Equatable {
+        case loading
+        case failed(String)
+        case hidden
+    }
+
+    let state: ViewState
     let retryAction: () -> Void
 
     var body: some View {
-        switch loadState {
-        case .loadingNextPage:
+        switch state {
+        case .loading:
             ProgressView()
                 .frame(maxWidth: .infinity)
 
@@ -21,7 +28,7 @@ struct PaginationFooterView: View {
             }
             .frame(maxWidth: .infinity)
 
-        case .idle, .loading, .refreshing:
+        case .hidden:
             EmptyView()
         }
     }
