@@ -8,23 +8,7 @@ struct BreedDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                LazyImage(url: breed.image?.url) { state in
-                    if let image = state.image {
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    } else {
-                        Color.gray.opacity(0.2)
-                            .overlay {
-                                Image(systemName: "photo")
-                                    .font(.largeTitle)
-                                    .foregroundStyle(.gray)
-                            }
-                    }
-                }
-                .frame(height: 280)
-                .frame(maxWidth: .infinity)
-                .clipped()
+                BreedDetailImageView(imageURL: breed.image?.url)
 
                 VStack(alignment: .leading, spacing: 16) {
                     Text(breed.name)
