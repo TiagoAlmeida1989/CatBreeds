@@ -12,9 +12,7 @@ struct FavoritesFeature {
         }
 
         var averageLifespan: Double? {
-            let values = breeds.compactMap(\.lifeSpan.average)
-            guard !values.isEmpty else { return nil }
-            return values.reduce(0, +) / Double(values.count)
+            breeds.averageLifespan
         }
 
         mutating func removeFavorite(id: Breed.ID) {

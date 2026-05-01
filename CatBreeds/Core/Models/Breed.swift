@@ -43,3 +43,13 @@ extension Breed: Equatable {
         lhs.isFavorite == rhs.isFavorite
     }
 }
+
+// MARK: - Statistics
+
+extension Array where Element == Breed {
+    var averageLifespan: Double? {
+        let values = compactMap(\.lifeSpan.average)
+        guard !values.isEmpty else { return nil }
+        return values.reduce(0, +) / Double(values.count)
+    }
+}
