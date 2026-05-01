@@ -14,25 +14,14 @@ struct FavoritesView: View {
                     systemImage: "cat"
                 )
             case .content:
-                List {
-                    if let average = store.averageLifespan {
-                        Section {
-                            Text("Average lifespan: \(average, specifier: "%.1f") years")
-                                .font(.headline)
-                        }
+                FavoritesListContentView(
+                    breeds: store.breeds,
+                    averageLifespan: store.averageLifespan,
+                    onFavoriteTap: { id in
+                        store.send(.favoriteButtonTapped(id))
                     }
-
-                    ForEach(store.breeds) { breed in
-                        NavigationLink(value: breed) {
-                            BreedRowView(
-                                breed: breed,
-                                onFavoriteTap: {
-                                    store.send(.favoriteButtonTapped(breed.id))
-                                }
-                            )
-                        }
-                    }
-                }
+                )
+                
             }
         }
         .navigationTitle("Favorites")
