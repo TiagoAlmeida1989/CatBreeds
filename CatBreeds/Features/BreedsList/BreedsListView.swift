@@ -42,41 +42,21 @@ struct BreedsListView: View {
             await store.send(.task).finish()
         }
     }
-    
-    
-    @ViewBuilder
+
     private var contentRows: some View {
-        ForEach(store.filteredBreeds) { breed in
-            breedRow(breed)
-        }
-        
-        paginationFooter
-    }
-
-    private func breedRow(_ breed: Breed) -> some View {
-        NavigationLink(value: breed.id) {
-            BreedRowView(
-                breed: breed,
-                onFavoriteTap: {
-                    store.send(.favoriteButtonTapped(breed.id))
-                }
-            )
-        }
-        .onAppear {
-            store.send(.loadNextPageIfNeeded(breed))
-        }
-    }
-
-    @ViewBuilder
-    private var paginationFooter: some View {
-        if store.hasPaginationFooter {
-            BreedsPaginationFooterView(
-                state: store.paginationFooterState,
-                retryAction: {
-                    store.send(.retryNextPageTapped)
-                }
-            )
-        }
+        BreedsListContentView(
+            breeds: store.filteredBreeds,
+            paginationFooterState: store.paginationFooterState,
+            onBreedAppear: { breed in
+                store.send(.loadNextPageIfNeeded(breed))
+            },
+            onFavoriteTap: { breedID in
+                store.send(.favoriteButtonTapped(breedID))
+            },
+            onRetryNextPageTap: {
+                store.send(.retryNextPageTapped)
+            }
+        )
     }
 
     private var loadingState: some View {
