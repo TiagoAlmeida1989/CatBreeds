@@ -1,5 +1,7 @@
 # CatBreeds
 
+![CI](https://github.com/TiagoAlmeida1989/CatBreeds/actions/workflows/ci.yml/badge.svg)
+
 An iOS app built with SwiftUI that lets you explore cat breeds using [The Cat API](https://thecatapi.com/). Browse the full catalogue, search by name, save favourites, and access all previously loaded content even without an internet connection.
 
 ---
