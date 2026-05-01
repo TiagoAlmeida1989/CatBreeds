@@ -36,14 +36,7 @@ struct BreedsListView: View {
             )
         )
         .navigationDestination(for: Breed.ID.self) { breedID in
-            if let breed = store.breeds.first(where: { $0.id == breedID }) {
-                BreedDetailView(
-                    breed: breed,
-                    onFavoriteTap: {
-                        store.send(.favoriteButtonTapped(breed.id))
-                    }
-                )
-            }
+            breedDetailDestination(for: breedID)
         }
         .task {
             await store.send(.task).finish()
@@ -122,5 +115,17 @@ struct BreedsListView: View {
             systemImage: "cat"
         )
         .listRowSeparator(.hidden)
+    }
+    
+    @ViewBuilder
+    private func breedDetailDestination(for breedID: Breed.ID) -> some View {
+        if let breed = store.breeds.first(where: { $0.id == breedID }) {
+            BreedDetailView(
+                breed: breed,
+                onFavoriteTap: {
+                    store.send(.favoriteButtonTapped(breed.id))
+                }
+            )
+        }
     }
 }
