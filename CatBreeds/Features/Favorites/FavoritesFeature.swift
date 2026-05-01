@@ -11,8 +11,8 @@ struct FavoritesFeature {
             breeds.isEmpty ? .empty : .content
         }
 
-        var averageLifespan: Double? {
-            breeds.averageLifespan
+        var averageLifespan: String? {
+            breeds.averageLifespanFormatted
         }
 
         mutating func removeFavorite(id: Breed.ID) {

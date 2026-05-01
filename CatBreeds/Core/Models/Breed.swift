@@ -52,4 +52,13 @@ extension Array where Element == Breed {
         guard !values.isEmpty else { return nil }
         return values.reduce(0, +) / Double(values.count)
     }
+    
+    var averageLifespanFormatted: String? {
+        guard let average = averageLifespan else { return nil }
+        
+        let number = NSNumber(value: average)
+        let formatted = lifespanFormatter.string(from: number) ?? "\(average)"
+        
+        return "\(formatted) years"
+    }
 }
