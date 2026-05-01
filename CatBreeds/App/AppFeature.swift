@@ -55,8 +55,11 @@ struct AppFeature {
                     }
                 }
 
-            case .breedsList:
+            case .breedsList(.breedsResponse):
                 syncFavoritesIntoBreedsList(state: &state)
+                return .none
+
+            case .breedsList:
                 return .none
 
             case let .favorites(.favoriteButtonTapped(id)):

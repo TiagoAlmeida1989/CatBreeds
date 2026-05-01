@@ -84,17 +84,6 @@ struct BreedsListFeature {
                 return .content
             }
         }
-
-        var paginationFooterStateID: String {
-            switch paginationFooterState {
-            case .hidden:
-                return "hidden"
-            case .loading:
-                return "loading"
-            case let .failed(message):
-                return "failed-\(message)"
-            }
-        }
     }
 
     // MARK: - Action
@@ -161,18 +150,15 @@ struct BreedsListFeature {
                 return load(page: state.nextPage, type: .nextPage)
 
             case .retryNextPageTapped:
-                print("[PAGINATION] 🔁 retryNextPageTapped — isSearching: \(state.isSearching), canLoadMore: \(state.canLoadMore), loadState: \(state.loadState)")
                 guard
                     !state.isSearching,
                     state.canLoadMore
                 else {
-                    print("[PAGINATION] 🚫 retryNextPageTapped guard failed")
                     return .none
                 }
 
                 state.loadState = .loadingNextPage
                 state.paginationFooterState = .loading
-                print("[PAGINATION] ✅ paginationFooterState → .loading")
                 return load(page: state.nextPage, type: .nextPage)
 
             // MARK: - Search
@@ -215,8 +201,6 @@ struct BreedsListFeature {
                 state.canLoadMore = page.hasNextPage
                 state.loadState = .idle
                 state.paginationFooterState = .hidden
-                print("[PAGINATION] ✅ breedsResponse success (.\(loadType)) — paginationFooterState → .hidden")
-
                 return .none
 
             // MARK: - Response Failure
@@ -229,7 +213,6 @@ struct BreedsListFeature {
                 case .nextPage:
                     state.loadState = .idle
                     state.paginationFooterState = .failed("Could not load more breeds.")
-                    print("[PAGINATION] ❌ breedsResponse failure (.nextPage) — paginationFooterState → .failed")
                 }
 
                 return .none
@@ -245,10 +228,6 @@ struct BreedsListFeature {
     ) -> Effect<Action> {
         .run { send in
             do {
-                if type == .nextPage {
-                    try? await Task.sleep(for: .milliseconds(500))
-                }
-
                 let result = try await breedsClient.fetchBreeds(page, 10)
                 await send(.breedsResponse(.success(result), type))
             } catch {

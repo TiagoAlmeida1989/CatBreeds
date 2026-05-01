@@ -9,26 +9,19 @@ extension BreedsClient: DependencyKey {
     static let liveValue: BreedsClient = {
         @Dependency(\.apiConfiguration) var apiConfiguration
 
-        return BreedsClient(
-            fetchBreeds: { page, limit in
-                let apiClient = await DefaultAPIClient(
+        let repository = DefaultBreedsRepository(
+            remoteDataSource: DefaultCatBreedsRemoteDataSource(
+                apiClient: DefaultAPIClient(
                     httpClient: URLSessionHTTPClient(),
                     requestBuilder: DefaultRequestBuilder(configuration: apiConfiguration)
                 )
+            ),
+            localDataSource: SwiftDataBreedsLocalDataSource(container: SwiftDataStack.shared)
+        )
 
-                let remoteDataSource = await DefaultCatBreedsRemoteDataSource(
-                    apiClient: apiClient
-                )
-
-                let container = await MainActor.run { SwiftDataStack.shared }
-                let localDataSource = await SwiftDataBreedsLocalDataSource(container: container)
-
-                let repository = await DefaultBreedsRepository(
-                    remoteDataSource: remoteDataSource,
-                    localDataSource: localDataSource
-                )
-
-                return try await repository.fetchBreeds(page: page, limit: limit)
+        return BreedsClient(
+            fetchBreeds: { page, limit in
+                try await repository.fetchBreeds(page: page, limit: limit)
             }
         )
     }()
