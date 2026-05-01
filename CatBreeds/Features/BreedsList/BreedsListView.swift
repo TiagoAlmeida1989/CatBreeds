@@ -39,28 +39,7 @@ struct BreedsListView: View {
                 .listRowSeparator(.hidden)
 
             case .content:
-                ForEach(store.filteredBreeds) { breed in
-                    NavigationLink(value: breed.id) {
-                        BreedRowView(
-                            breed: breed,
-                            onFavoriteTap: {
-                                store.send(.favoriteButtonTapped(breed.id))
-                            }
-                        )
-                    }
-                    .onAppear {
-                        store.send(.loadNextPageIfNeeded(breed))
-                    }
-                }
-                if store.paginationFooterState != .hidden {
-                    PaginationFooterView(
-                        state: store.paginationFooterState,
-                        retryAction: { store.send(.retryNextPageTapped) }
-                    )
-                    .frame(maxWidth: .infinity)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                }
+                contentRows
             }
         }
         .listStyle(.plain)
@@ -89,4 +68,45 @@ struct BreedsListView: View {
             await store.send(.task).finish()
         }
     }
+    
+    
+    
+    @ViewBuilder
+    private var contentRows: some View {
+        ForEach(store.filteredBreeds) { breed in
+            breedRow(breed)
+        }
+        
+        paginationFooter
+    }
+    
+    private func breedRow(_ breed: Breed) -> some View {
+        NavigationLink(value: breed.id) {
+            BreedRowView(
+                breed: breed,
+                onFavoriteTap: {
+                    store.send(.favoriteButtonTapped(breed.id))
+                }
+            )
+        }
+        .onAppear {
+            store.send(.loadNextPageIfNeeded(breed))
+        }
+    }
+    
+    @ViewBuilder
+    private var paginationFooter: some View {
+        if store.paginationFooterState != .hidden {
+            PaginationFooterView(
+                state: store.paginationFooterState,
+                retryAction: {
+                    store.send(.retryNextPageTapped)
+                }
+            )
+            .frame(maxWidth: .infinity)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+        }
+    }
+    
 }
