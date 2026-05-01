@@ -14,7 +14,7 @@ struct BreedDetailImageView: View {
                 placeholder
             }
         }
-        .frame(height: 280)
+        .frame(height: 240)
         .frame(maxWidth: .infinity)
         .clipped()
     }

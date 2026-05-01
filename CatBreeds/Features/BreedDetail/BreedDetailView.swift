@@ -1,5 +1,4 @@
 import SwiftUI
-import NukeUI
 
 struct BreedDetailView: View {
     let breed: Breed
@@ -15,38 +14,28 @@ struct BreedDetailView: View {
                         .font(.largeTitle.bold())
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Label(breed.origin, systemImage: "mappin.and.ellipse")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    InfoChipView(
+                        systemImage: "mappin.and.ellipse",
+                        text: breed.origin
+                    )
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Temperament")
-                            .font(.headline)
+                    BreedDetailInfoSection(
+                        title: "Temperament",
+                        value: breed.temperament
+                    )
 
-                        Text(breed.temperament)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    BreedDetailInfoSection(
+                        title: "Description",
+                        value: breed.description
+                    )
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Description")
-                            .font(.headline)
-
-                        Text(breed.description)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Lifespan")
-                            .font(.headline)
-
-                        Text(breed.lifeSpan.displayValue)
-                            .foregroundStyle(.secondary)
-                    }
+                    BreedDetailInfoSection(
+                        title: "Lifespan",
+                        value: breed.lifeSpan.displayValue
+                    )
                 }
                 .padding(.horizontal, 24)
-                .padding(.vertical, 24)
+                .padding(.vertical, 28)
             }
         }
         .navigationTitle(breed.name)
