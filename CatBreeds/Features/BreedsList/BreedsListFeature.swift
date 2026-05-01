@@ -73,29 +73,37 @@ struct BreedsListFeature {
                 $0.name.localizedCaseInsensitiveContains(searchText)
             }
         }
+        
+        var isEmpty: Bool {
+            breeds.isEmpty
+        }
+
+        var isFilteredEmpty: Bool {
+            filteredBreeds.isEmpty
+        }
 
         var viewState: BreedsListViewState {
-            switch loadState {
-            case .loading:
+            if case .loading = loadState {
                 return .loading
-
-            case .refreshing where breeds.isEmpty:
-                return .loading
-
-            case let .failed(message) where breeds.isEmpty:
-                return .error(message)
-
-            default:
-                if filteredBreeds.isEmpty && isSearching {
-                    return .emptySearch
-                }
-
-                if breeds.isEmpty {
-                    return .empty
-                }
-
-                return .content
             }
+
+            if case .refreshing = loadState, isEmpty {
+                return .loading
+            }
+
+            if case let .failed(message) = loadState, isEmpty {
+                return .error(message)
+            }
+
+            if isSearching && isFilteredEmpty {
+                return .emptySearch
+            }
+
+            if isEmpty {
+                return .empty
+            }
+
+            return .content
         }
 
         func isLastBreed(_ breed: Breed) -> Bool {
