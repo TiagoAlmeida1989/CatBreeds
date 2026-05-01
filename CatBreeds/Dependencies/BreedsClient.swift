@@ -6,31 +6,32 @@ struct BreedsClient {
 }
 
 extension BreedsClient: DependencyKey {
-    static let liveValue = BreedsClient(
-        fetchBreeds: { page, limit in
-            let apiClient = DefaultAPIClient(
-                httpClient: URLSessionHTTPClient(),
-                requestBuilder: DefaultRequestBuilder()
-            )
+    static let liveValue: BreedsClient = {
+        @Dependency(\.apiConfiguration) var apiConfiguration
 
-            let remoteDataSource = DefaultCatBreedsRemoteDataSource(
-                apiClient: apiClient
-            )
+        return BreedsClient(
+            fetchBreeds: { page, limit in
+                let apiClient = await DefaultAPIClient(
+                    httpClient: URLSessionHTTPClient(),
+                    requestBuilder: DefaultRequestBuilder(configuration: apiConfiguration)
+                )
 
-            let container = await MainActor.run { SwiftDataStack.shared }
-            let localDataSource = SwiftDataBreedsLocalDataSource(container: container)
+                let remoteDataSource = await DefaultCatBreedsRemoteDataSource(
+                    apiClient: apiClient
+                )
 
-            let repository = DefaultBreedsRepository(
-                remoteDataSource: remoteDataSource,
-                localDataSource: localDataSource
-            )
+                let container = await MainActor.run { SwiftDataStack.shared }
+                let localDataSource = await SwiftDataBreedsLocalDataSource(container: container)
 
-            return try await repository.fetchBreeds(
-                page: page,
-                limit: limit
-            )
-        }
-    )
+                let repository = await DefaultBreedsRepository(
+                    remoteDataSource: remoteDataSource,
+                    localDataSource: localDataSource
+                )
+
+                return try await repository.fetchBreeds(page: page, limit: limit)
+            }
+        )
+    }()
 
     static let testValue = BreedsClient(
         fetchBreeds: { _, _ in

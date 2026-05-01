@@ -15,6 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Create Secrets.xcconfig
+        run: |
+          cat > Secrets.xcconfig <<EOF
+          CAT_API_KEY = ${{ secrets.CAT_API_KEY }}
+          EOF
+
       - name: Run Tests
         run: |
           xcodebuild test \

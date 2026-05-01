@@ -3,3 +3,6 @@ DerivedData/
 *.xcuserstate
 xcuserdata/
 *.xcworkspace
+
+# API Keys — never commit the real secrets file
+Secrets.xcconfig

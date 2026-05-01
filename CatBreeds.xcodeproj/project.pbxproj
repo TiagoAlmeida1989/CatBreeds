@@ -33,6 +33,7 @@
 		2295BE8D2FA239F600C44E12 /* CatBreeds.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CatBreeds.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2295BE9C2FA239F900C44E12 /* CatBreedsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CatBreedsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2295BEA62FA239F900C44E12 /* CatBreedsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CatBreedsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		22E30ACF2FA49E8900A2A448 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -82,6 +83,7 @@
 				2295BE8F2FA239F600C44E12 /* CatBreeds */,
 				2295BE9F2FA239F900C44E12 /* CatBreedsTests */,
 				2295BE8E2FA239F600C44E12 /* Products */,
+				22E30ACF2FA49E8900A2A448 /* Secrets.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -278,6 +280,7 @@
 /* Begin XCBuildConfiguration section */
 		2295BEAE2FA239F900C44E12 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22E30ACF2FA49E8900A2A448 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -341,6 +344,7 @@
 		};
 		2295BEAF2FA239F900C44E12 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22E30ACF2FA49E8900A2A448 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -397,6 +401,7 @@
 		};
 		2295BEB12FA239F900C44E12 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22E30ACF2FA49E8900A2A448 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -429,6 +434,7 @@
 		};
 		2295BEB22FA239F900C44E12 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22E30ACF2FA49E8900A2A448 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -466,7 +472,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tiagoalmeida.catbreeds.CatBreedsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -487,7 +493,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tiagoalmeida.catbreeds.CatBreedsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
