@@ -139,6 +139,14 @@ struct BreedsListFeature {
                 paginationFooterState = .failed("Could not load more breeds.")
             }
         }
+
+        mutating func toggleFavorite(for id: Breed.ID) {
+            guard let index = breeds.firstIndex(where: { $0.id == id }) else {
+                return
+            }
+            
+            breeds[index].isFavorite.toggle()
+        }
     }
 
     // MARK: - Action
@@ -219,11 +227,7 @@ struct BreedsListFeature {
             // MARK: - Favorite
 
             case let .favoriteButtonTapped(id):
-                guard let index = state.breeds.firstIndex(where: { $0.id == id }) else {
-                    return .none
-                }
-
-                state.breeds[index].isFavorite.toggle()
+                state.toggleFavorite(for: id)
                 return .none
 
             // MARK: - Response Success
