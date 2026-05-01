@@ -1,15 +1,13 @@
-import Foundation
+public struct Lifespan: Hashable, Sendable {
+    public let min: Int?
+    public let max: Int?
 
-struct Lifespan: Hashable, Sendable {
-    let min: Int?
-    let max: Int?
-
-    init(min: Int?, max: Int?) {
+    public init(min: Int?, max: Int?) {
         self.min = min
         self.max = max
     }
 
-    var average: Double? {
+    public var average: Double? {
         switch (min, max) {
         case let (.some(min), .some(max)):
             return Double(min + max) / 2
@@ -22,7 +20,7 @@ struct Lifespan: Hashable, Sendable {
         }
     }
 
-    var displayValue: String {
+    public var displayValue: String {
         switch (min, max) {
         case let (.some(min), .some(max)):
             return "\(min) - \(max) years"
@@ -37,7 +35,7 @@ struct Lifespan: Hashable, Sendable {
 }
 
 extension Lifespan: Equatable {
-    nonisolated static func == (lhs: Lifespan, rhs: Lifespan) -> Bool {
+    nonisolated public static func == (lhs: Lifespan, rhs: Lifespan) -> Bool {
         lhs.min == rhs.min && lhs.max == rhs.max
     }
 }

@@ -1,3 +1,4 @@
+import CatBreedsCore
 @testable import CatBreeds
 
 final class ImageCacheDataSourceSpy: ImageCacheDataSource {

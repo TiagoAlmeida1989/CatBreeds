@@ -1,3 +1,4 @@
+import CatBreedsCore
 import ComposableArchitecture
 import Testing
 @testable import CatBreeds

@@ -1,3 +1,4 @@
+import CatBreedsCore
 import Foundation
 
 struct CatBreedDTO: Decodable, Sendable {

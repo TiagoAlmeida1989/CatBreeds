@@ -1,3 +1,4 @@
+import CatBreedsCore
 import Testing
 @testable import CatBreeds
 

@@ -1,3 +1,4 @@
+import CatBreedsCore
 import SwiftData
 import Testing
 @testable import CatBreeds

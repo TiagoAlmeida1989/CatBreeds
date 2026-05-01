@@ -1,3 +1,4 @@
+import CatBreedsCore
 import SwiftUI
 import SwiftData
 import ComposableArchitecture

@@ -1,16 +1,16 @@
 import Foundation
 
-struct Breed: Identifiable, Hashable, Sendable {
-    let id: String
-    let name: String
-    let origin: String
-    let temperament: String
-    let description: String
-    let lifeSpan: Lifespan
-    let image: BreedImage?
-    var isFavorite: Bool
+public struct Breed: Identifiable, Hashable, Sendable {
+    public let id: String
+    public let name: String
+    public let origin: String
+    public let temperament: String
+    public let description: String
+    public let lifeSpan: Lifespan
+    public let image: BreedImage?
+    public var isFavorite: Bool
 
-    init(
+    public init(
         id: String,
         name: String,
         origin: String,
@@ -32,7 +32,7 @@ struct Breed: Identifiable, Hashable, Sendable {
 }
 
 extension Breed: Equatable {
-    nonisolated static func == (lhs: Breed, rhs: Breed) -> Bool {
+    nonisolated public static func == (lhs: Breed, rhs: Breed) -> Bool {
         lhs.id == rhs.id &&
         lhs.name == rhs.name &&
         lhs.origin == rhs.origin &&
@@ -46,19 +46,25 @@ extension Breed: Equatable {
 
 // MARK: - Statistics
 
+private let lifespanFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.minimumFractionDigits = 0
+    formatter.maximumFractionDigits = 1
+    formatter.numberStyle = .decimal
+    return formatter
+}()
+
 extension Array where Element == Breed {
-    var averageLifespan: Double? {
+    public var averageLifespan: Double? {
         let values = compactMap(\.lifeSpan.average)
         guard !values.isEmpty else { return nil }
         return values.reduce(0, +) / Double(values.count)
     }
-    
-    var averageLifespanFormatted: String? {
+
+    public var averageLifespanFormatted: String? {
         guard let average = averageLifespan else { return nil }
-        
         let number = NSNumber(value: average)
         let formatted = lifespanFormatter.string(from: number) ?? "\(average)"
-        
         return "\(formatted) years"
     }
 }

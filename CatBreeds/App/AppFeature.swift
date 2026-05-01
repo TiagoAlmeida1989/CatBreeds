@@ -1,3 +1,4 @@
+import CatBreedsCore
 import ComposableArchitecture
 
 enum AppTab: Hashable {

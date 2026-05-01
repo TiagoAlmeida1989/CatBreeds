@@ -1,3 +1,4 @@
+import CatBreedsCore
 import SwiftUI
 
 struct BreedsListContentView: View {
