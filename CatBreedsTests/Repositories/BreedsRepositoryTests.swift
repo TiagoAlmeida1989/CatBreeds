@@ -4,11 +4,8 @@ import Testing
 @Suite("BreedsRepository")
 struct BreedsRepositoryTests {
     @Test
-    func fetchBreedsForFirstPageReturnsCachedBreedsAfterSavingRemotePage() async throws {
-        let remotePage = makeBreedsPage(
-            breeds: [.abyssinian, .bengal],
-            hasNextPage: true
-        )
+    func fetchBreedsForFirstPageDeletesAllCachesThenReturnsCachedPage() async throws {
+        let remotePage = makeBreedsPage(breeds: [.abyssinian, .bengal], hasNextPage: true)
         let cachedBreeds = [
             Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: true),
             Breed.makeBreed(id: "beng", name: "Bengal", isFavorite: false)
@@ -21,6 +18,7 @@ struct BreedsRepositoryTests {
 
         #expect(result == makeBreedsPage(breeds: cachedBreeds, hasNextPage: true))
         #expect(await remote.fetchCalls == [FetchCall(page: 0, limit: 2)])
+        #expect(await local.deleteAllCallCount == 1)
         #expect(await local.savedCalls == [SaveCall(breeds: remotePage.breeds, page: 0)])
         #expect(await local.fetchCalls == [0])
     }
@@ -38,23 +36,26 @@ struct BreedsRepositoryTests {
         let result = try await repository.fetchBreeds(page: 0, limit: 2)
 
         #expect(result == remotePage)
+        #expect(await local.deleteAllCallCount == 1)
         #expect(await local.savedCalls == [SaveCall(breeds: remotePage.breeds, page: 0)])
         #expect(await local.fetchCalls == [])
     }
 
     @Test
-    func fetchBreedsForNextPageReturnsRemotePageWithoutCaching() async throws {
+    func fetchBreedsForNextPageReturnsCachedPageAfterSavingRemotePage() async throws {
         let remotePage = makeBreedsPage(breeds: [.maineCoon], hasNextPage: false)
+        let cachedBreeds: [Breed] = [.maineCoon]
         let remote = RemoteBreedsDataSourceSpy(result: .success(remotePage))
-        let local = LocalBreedsDataSourceSpy(fetchResult: .success([.abyssinian]))
+        let local = LocalBreedsDataSourceSpy(fetchResult: .success(cachedBreeds))
         let repository = makeRepository(remote: remote, local: local)
 
         let result = try await repository.fetchBreeds(page: 1, limit: 2)
 
         #expect(result == remotePage)
         #expect(await remote.fetchCalls == [FetchCall(page: 1, limit: 2)])
-        #expect(await local.savedCalls == [])
-        #expect(await local.fetchCalls == [])
+        #expect(await local.deleteAllCallCount == 0)
+        #expect(await local.savedCalls == [SaveCall(breeds: remotePage.breeds, page: 1)])
+        #expect(await local.fetchCalls == [1])
     }
 
     @Test
@@ -68,8 +69,24 @@ struct BreedsRepositoryTests {
 
         #expect(result == makeBreedsPage(breeds: cachedBreeds, hasNextPage: true))
         #expect(await remote.fetchCalls == [FetchCall(page: 0, limit: 2)])
+        #expect(await local.deleteAllCallCount == 0)
         #expect(await local.savedCalls == [])
         #expect(await local.fetchCalls == [0])
+    }
+
+    @Test
+    func fetchBreedsForNextPageFallsBackToCacheWhenRemoteFails() async throws {
+        let cachedBreeds: [Breed] = [.maineCoon]
+        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.requestFailed))
+        let local = LocalBreedsDataSourceSpy(fetchResult: .success(cachedBreeds))
+        let repository = makeRepository(remote: remote, local: local)
+
+        let result = try await repository.fetchBreeds(page: 1, limit: 2)
+
+        #expect(result == makeBreedsPage(breeds: cachedBreeds, hasNextPage: false))
+        #expect(await local.deleteAllCallCount == 0)
+        #expect(await local.savedCalls == [])
+        #expect(await local.fetchCalls == [1])
     }
 
     @Test
@@ -99,9 +116,9 @@ struct BreedsRepositoryTests {
     }
 
     @Test
-    func fetchBreedsForNextPageThrowsRemoteErrorWhenRemoteFails() async {
+    func fetchBreedsForNextPageThrowsRemoteErrorWhenRemoteFailsAndCacheIsEmpty() async {
         let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.requestFailed))
-        let local = LocalBreedsDataSourceSpy(fetchResult: .success([.abyssinian]))
+        let local = LocalBreedsDataSourceSpy(fetchResult: .success([]))
         let repository = makeRepository(remote: remote, local: local)
 
         do {
@@ -160,6 +177,7 @@ private actor LocalBreedsDataSourceSpy: BreedsLocalDataSource {
     private let fetchResult: Result<[Breed], Error>
     private var _savedCalls: [SaveCall] = []
     private var _fetchCalls: [Int] = []
+    private var _deleteAllCallCount = 0
 
     init(
         saveError: Error? = nil,
@@ -171,18 +189,20 @@ private actor LocalBreedsDataSourceSpy: BreedsLocalDataSource {
 
     var savedCalls: [SaveCall] { _savedCalls }
     var fetchCalls: [Int] { _fetchCalls }
+    var deleteAllCallCount: Int { _deleteAllCallCount }
 
     func saveBreeds(_ breeds: [Breed], page: Int) async throws {
         _savedCalls.append(SaveCall(breeds: breeds, page: page))
-
-        if let saveError {
-            throw saveError
-        }
+        if let saveError { throw saveError }
     }
 
     func fetchBreeds(page: Int) async throws -> [Breed] {
         _fetchCalls.append(page)
         return try fetchResult.get()
+    }
+
+    func deleteAllBreeds() async throws {
+        _deleteAllCallCount += 1
     }
 }
 

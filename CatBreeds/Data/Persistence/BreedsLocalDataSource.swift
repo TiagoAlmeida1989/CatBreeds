@@ -4,6 +4,7 @@ import SwiftData
 protocol BreedsLocalDataSource {
     func saveBreeds(_ breeds: [Breed], page: Int) async throws
     func fetchBreeds(page: Int) async throws -> [Breed]
+    func deleteAllBreeds() async throws
 }
 
 struct SwiftDataBreedsLocalDataSource: BreedsLocalDataSource {
@@ -42,6 +43,14 @@ struct SwiftDataBreedsLocalDataSource: BreedsLocalDataSource {
             )
 
             return try context.fetch(descriptor).map(\.domainModel)
+        }
+    }
+
+    func deleteAllBreeds() async throws {
+        try await MainActor.run {
+            let context = ModelContext(SwiftDataStack.shared)
+            try context.delete(model: CachedBreedEntity.self)
+            try context.save()
         }
     }
 }

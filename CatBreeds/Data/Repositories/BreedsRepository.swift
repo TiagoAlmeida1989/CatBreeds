@@ -18,49 +18,30 @@ struct DefaultBreedsRepository: BreedsRepository {
 
     func fetchBreeds(page: Int, limit: Int) async throws -> BreedsPage {
         do {
-            let remotePage = try await remoteDataSource.fetchBreeds(
-                page: page,
-                limit: limit
-            )
-
-            guard page == 0 else {
-                return remotePage
-            }
+            let remotePage = try await remoteDataSource.fetchBreeds(page: page, limit: limit)
 
             do {
-                try await localDataSource.saveBreeds(
-                    remotePage.breeds,
-                    page: page
-                )
-
+                if page == 0 {
+                    try await localDataSource.deleteAllBreeds()
+                }
+                try await localDataSource.saveBreeds(remotePage.breeds, page: page)
                 let cachedBreeds = try await localDataSource.fetchBreeds(page: page)
 
-                guard !cachedBreeds.isEmpty else {
-                    return remotePage
-                }
+                guard !cachedBreeds.isEmpty else { return remotePage }
 
-                let result = BreedsPage(breeds: cachedBreeds, hasNextPage: remotePage.hasNextPage)
-                return result
+                return BreedsPage(breeds: cachedBreeds, hasNextPage: remotePage.hasNextPage)
             } catch {
                 return remotePage
             }
 
         } catch {
-            guard page == 0 else {
-                throw error
-            }
-
             let cachedBreeds = try await localDataSource.fetchBreeds(page: page)
 
-            guard !cachedBreeds.isEmpty else {
-                throw error
-            }
-
-            let hasNextPage = cachedBreeds.count == limit
+            guard !cachedBreeds.isEmpty else { throw error }
 
             return BreedsPage(
                 breeds: cachedBreeds,
-                hasNextPage: hasNextPage
+                hasNextPage: cachedBreeds.count == limit
             )
         }
     }

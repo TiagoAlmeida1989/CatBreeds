@@ -1,21 +1,38 @@
 import SwiftUI
 
 struct PaginationFooterView: View {
-
-    enum ViewState: Equatable {
-        case loading
-        case failed(String)
-        case hidden
-    }
-
-    let state: ViewState
+    let state: PaginationFooterState
     let retryAction: () -> Void
 
     var body: some View {
-        switch state {
-        case .loading:
-            ProgressView()
+        VStack(spacing: 0) {
+            Divider()
+                .padding(.leading, 16)
+
+            content
                 .frame(maxWidth: .infinity)
+                .frame(minHeight: 56)
+                .padding(.horizontal, 16)
+                .background(.background)
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch state {
+        case .hidden:
+            EmptyView()
+
+        case .loading:
+            HStack(spacing: 8) {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .controlSize(.regular)
+
+                Text("Loading more...")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
 
         case let .failed(message):
             VStack(spacing: 8) {
@@ -23,13 +40,12 @@ struct PaginationFooterView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 
-                Button("Retry", action: retryAction)
-                    .buttonStyle(.bordered)
+                Button("Retry") {
+                    retryAction()
+                }
+                .buttonStyle(.bordered)
             }
-            .frame(maxWidth: .infinity)
-
-        case .hidden:
-            EmptyView()
+            .padding(.vertical, 8)
         }
     }
 }

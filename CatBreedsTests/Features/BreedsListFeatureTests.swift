@@ -129,6 +129,7 @@ final class BreedsListFeatureTests: XCTestCase {
 
         await store.send(.loadNextPageIfNeeded(.abyssinian)) {
             $0.loadState = .loadingNextPage
+            $0.paginationFooterState = .loading
         }
 
         await store.receive(.breedsResponse(.success(page1), .nextPage)) {
@@ -136,6 +137,7 @@ final class BreedsListFeatureTests: XCTestCase {
             $0.nextPage = 2
             $0.canLoadMore = true
             $0.loadState = .idle
+            $0.paginationFooterState = .hidden
         }
 
         XCTAssertEqual(store.state.viewState, .content)
@@ -160,10 +162,12 @@ final class BreedsListFeatureTests: XCTestCase {
 
         await store.send(.loadNextPageIfNeeded(.abyssinian)) {
             $0.loadState = .loadingNextPage
+            $0.paginationFooterState = .loading
         }
 
         await store.receive(.breedsResponse(.failure(.requestFailed), .nextPage)) {
-            $0.loadState = .failed("Could not load more breeds.")
+            $0.loadState = .idle
+            $0.paginationFooterState = .failed("Could not load more breeds.")
         }
 
         XCTAssertEqual(store.state.breeds, [.abyssinian])
@@ -196,12 +200,14 @@ final class BreedsListFeatureTests: XCTestCase {
 
         await store.send(.retryNextPageTapped) {
             $0.loadState = .loadingNextPage
+            $0.paginationFooterState = .loading
         }
 
         await store.receive(.breedsResponse(.success(page1), .nextPage)) {
             $0.breeds = [.abyssinian, .bengal]
             $0.canLoadMore = false
             $0.loadState = .idle
+            $0.paginationFooterState = .hidden
         }
 
         XCTAssertEqual(store.state.nextPage, 1)
