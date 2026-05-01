@@ -53,7 +53,7 @@ struct PaginationFooterView: View {
                 Button(action: retryAction) {
                     Image(systemName: "arrow.clockwise")
                         .font(.body.bold())
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.brown)
                 }
             }
         }

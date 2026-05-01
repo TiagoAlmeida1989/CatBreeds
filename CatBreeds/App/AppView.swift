@@ -31,6 +31,7 @@ struct AppView: View {
             }
             .tag(AppTab.favorites)
         }
+        .tint(.brown)
         .task {
             await store.send(.task).finish()
         }
