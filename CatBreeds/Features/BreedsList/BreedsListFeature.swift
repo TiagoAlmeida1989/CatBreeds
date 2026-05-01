@@ -53,6 +53,14 @@ struct BreedsListFeature {
             !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
 
+        var hasPaginationFooter: Bool {
+            paginationFooterState != .hidden
+        }
+
+        var canRequestNextPage: Bool {
+            !isSearching && canLoadMore
+        }
+
         var filteredBreeds: [Breed] {
             guard isSearching else { return breeds }
 
@@ -82,6 +90,53 @@ struct BreedsListFeature {
                 }
 
                 return .content
+            }
+        }
+
+        func isLastBreed(_ breed: Breed) -> Bool {
+            breeds.last?.id == breed.id
+        }
+
+        mutating func startNextPageLoading() {
+            loadState = .loadingNextPage
+            paginationFooterState = .loading
+        }
+
+        mutating func apply(
+            _ page: BreedsPage,
+            loadType: BreedsListLoadType
+        ) {
+            switch loadType {
+            case .initial, .refresh:
+                breeds = page.breeds
+                nextPage = page.hasNextPage ? 1 : 0
+
+            case .nextPage:
+                let existingIDs = Set(breeds.map(\.id))
+                let newBreeds = page.breeds.filter {
+                    !existingIDs.contains($0.id)
+                }
+
+                breeds.append(contentsOf: newBreeds)
+
+                if page.hasNextPage {
+                    nextPage += 1
+                }
+            }
+
+            canLoadMore = page.hasNextPage
+            loadState = .idle
+            paginationFooterState = .hidden
+        }
+
+        mutating func applyFailure(loadType: BreedsListLoadType) {
+            switch loadType {
+            case .initial, .refresh:
+                loadState = .failed("Could not load cat breeds.")
+
+            case .nextPage:
+                loadState = .idle
+                paginationFooterState = .failed("Could not load more breeds.")
             }
         }
     }
@@ -137,28 +192,22 @@ struct BreedsListFeature {
 
             case let .loadNextPageIfNeeded(breed):
                 guard
-                    !state.isSearching,
-                    state.canLoadMore,
+                    state.canRequestNextPage,
                     state.loadState == .idle,
-                    state.breeds.last?.id == breed.id
+                    state.isLastBreed(breed)
                 else {
                     return .none
                 }
 
-                state.loadState = .loadingNextPage
-                state.paginationFooterState = .loading
+                state.startNextPageLoading()
                 return load(page: state.nextPage, type: .nextPage)
 
             case .retryNextPageTapped:
-                guard
-                    !state.isSearching,
-                    state.canLoadMore
-                else {
+                guard state.canRequestNextPage else {
                     return .none
                 }
 
-                state.loadState = .loadingNextPage
-                state.paginationFooterState = .loading
+                state.startNextPageLoading()
                 return load(page: state.nextPage, type: .nextPage)
 
             // MARK: - Search
@@ -180,41 +229,13 @@ struct BreedsListFeature {
             // MARK: - Response Success
 
             case let .breedsResponse(.success(page), loadType):
-                switch loadType {
-                case .initial, .refresh:
-                    state.breeds = page.breeds
-                    state.nextPage = page.hasNextPage ? 1 : 0
-
-                case .nextPage:
-                    let existingIDs = Set(state.breeds.map(\.id))
-                    let newBreeds = page.breeds.filter {
-                        !existingIDs.contains($0.id)
-                    }
-
-                    state.breeds.append(contentsOf: newBreeds)
-
-                    if page.hasNextPage {
-                        state.nextPage += 1
-                    }
-                }
-
-                state.canLoadMore = page.hasNextPage
-                state.loadState = .idle
-                state.paginationFooterState = .hidden
+                state.apply(page, loadType: loadType)
                 return .none
 
             // MARK: - Response Failure
 
             case let .breedsResponse(.failure, loadType):
-                switch loadType {
-                case .initial, .refresh:
-                    state.loadState = .failed("Could not load cat breeds.")
-
-                case .nextPage:
-                    state.loadState = .idle
-                    state.paginationFooterState = .failed("Could not load more breeds.")
-                }
-
+                state.applyFailure(loadType: loadType)
                 return .none
             }
         }
