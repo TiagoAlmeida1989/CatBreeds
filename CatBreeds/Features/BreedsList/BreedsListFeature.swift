@@ -35,6 +35,11 @@ enum PaginationFooterState: Equatable {
 
 @Reducer
 struct BreedsListFeature {
+    
+    private enum Constants {
+        static let initialLoadErrorMessage = "Could not load cat breeds."
+        static let nextPageErrorMessage = "Could not load more breeds."
+    }
 
     // MARK: - State
 
@@ -132,11 +137,11 @@ struct BreedsListFeature {
         mutating func applyFailure(loadType: BreedsListLoadType) {
             switch loadType {
             case .initial, .refresh:
-                loadState = .failed("Could not load cat breeds.")
+                loadState = .failed(Constants.initialLoadErrorMessage)
 
             case .nextPage:
                 loadState = .idle
-                paginationFooterState = .failed("Could not load more breeds.")
+                paginationFooterState = .failed(Constants.nextPageErrorMessage)
             }
         }
 
