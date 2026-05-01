@@ -6,7 +6,7 @@ import XCTest
 final class BreedsListFeatureTests: XCTestCase {
 
     func testInitialLoadSuccess() async {
-        let page0 = BreedsPage(
+        let page0 = BreedsPage.fixture(
             breeds: [.abyssinian, .bengal],
             hasNextPage: true
         )
@@ -104,13 +104,12 @@ final class BreedsListFeatureTests: XCTestCase {
     }
 
     func testPaginationSuccess() async {
-        var state = BreedsListFeature.State()
-        state.breeds = [.abyssinian]
-        state.nextPage = 1
-        state.canLoadMore = true
-        state.loadState = .idle
+        let state = BreedsListFeature.State.withBreeds(
+            [.abyssinian],
+            nextPage: 1
+        )
 
-        let page1 = BreedsPage(
+        let page1 = BreedsPage.fixture(
             breeds: [.bengal, .maineCoon],
             hasNextPage: true
         )
@@ -143,11 +142,10 @@ final class BreedsListFeatureTests: XCTestCase {
     }
 
     func testPaginationFailureKeepsContentViewState() async {
-        var state = BreedsListFeature.State()
-        state.breeds = [.abyssinian]
-        state.nextPage = 1
-        state.canLoadMore = true
-        state.loadState = .idle
+        let state = BreedsListFeature.State.withBreeds(
+            [.abyssinian],
+            nextPage: 1
+        )
 
         let store = TestStore(
             initialState: state
@@ -173,15 +171,14 @@ final class BreedsListFeatureTests: XCTestCase {
     }
 
     func testRetryNextPageSuccess() async {
-        var state = BreedsListFeature.State()
-        state.breeds = [.abyssinian]
-        state.nextPage = 1
-        state.canLoadMore = true
+        var state = BreedsListFeature.State.withBreeds(
+            [.abyssinian],
+            nextPage: 1
+        )
         state.loadState = .failed("Could not load more breeds.")
 
-        let page1 = BreedsPage(
-            breeds: [.bengal],
-            hasNextPage: false
+        let page1 = BreedsPage.fixture(
+            breeds: [.bengal]
         )
 
         let store = TestStore(
@@ -212,13 +209,12 @@ final class BreedsListFeatureTests: XCTestCase {
     }
 
     func testPullToRefreshSuccess() async {
-        var state = BreedsListFeature.State()
-        state.breeds = [.abyssinian, .bengal]
-        state.nextPage = 2
-        state.canLoadMore = true
-        state.loadState = .idle
+        let state = BreedsListFeature.State.withBreeds(
+            [.abyssinian, .bengal],
+            nextPage: 2
+        )
 
-        let refreshedPage = BreedsPage(
+        let refreshedPage = BreedsPage.fixture(
             breeds: [.maineCoon],
             hasNextPage: true
         )
@@ -247,5 +243,32 @@ final class BreedsListFeatureTests: XCTestCase {
         }
 
         XCTAssertEqual(store.state.viewState, .content)
+    }
+}
+
+
+private extension BreedsPage {
+    static func fixture(
+        breeds: [Breed],
+        hasNextPage: Bool = false
+    ) -> Self {
+        Self(
+            breeds: breeds,
+            hasNextPage: hasNextPage
+        )
+    }
+}
+
+private extension BreedsListFeature.State {
+    static func withBreeds(
+        _ breeds: [Breed],
+        nextPage: Int = 0,
+        canLoadMore: Bool = true
+    ) -> Self {
+        var state = Self()
+        state.breeds = breeds
+        state.nextPage = nextPage
+        state.canLoadMore = canLoadMore
+        return state
     }
 }
