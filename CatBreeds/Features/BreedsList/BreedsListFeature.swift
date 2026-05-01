@@ -6,7 +6,6 @@ import ComposableArchitecture
 enum BreedsListLoadState: Equatable {
     case idle
     case loading
-    case loadingNextPage
     case refreshing
     case failed(String)
 }
@@ -35,8 +34,9 @@ enum PaginationFooterState: Equatable {
 
 @Reducer
 struct BreedsListFeature {
-    
+
     private enum Constants {
+        static let pageSize = 10
         static let initialLoadErrorMessage = "Could not load cat breeds."
         static let nextPageErrorMessage = "Could not load more breeds."
     }
@@ -103,7 +103,6 @@ struct BreedsListFeature {
         }
 
         mutating func startNextPageLoading() {
-            loadState = .loadingNextPage
             paginationFooterState = .loading
         }
 
@@ -206,7 +205,7 @@ struct BreedsListFeature {
             case let .loadNextPageIfNeeded(breed):
                 guard
                     state.canRequestNextPage,
-                    state.loadState == .idle,
+                    state.paginationFooterState != .loading,
                     state.isLastBreed(breed)
                 else {
                     return .none
@@ -216,7 +215,10 @@ struct BreedsListFeature {
                 return load(page: state.nextPage, type: .nextPage)
 
             case .retryNextPageTapped:
-                guard state.canRequestNextPage else {
+                guard
+                    state.canRequestNextPage,
+                    state.paginationFooterState != .loading
+                else {
                     return .none
                 }
 
@@ -258,7 +260,10 @@ struct BreedsListFeature {
     ) -> Effect<Action> {
         .run { send in
             do {
-                let result = try await breedsClient.fetchBreeds(page, 10)
+                let result = try await breedsClient.fetchBreeds(
+                    page,
+                    Constants.pageSize
+                )
                 await send(.breedsResponse(.success(result), type))
             } catch {
                 await send(.breedsResponse(.failure(.requestFailed), type))

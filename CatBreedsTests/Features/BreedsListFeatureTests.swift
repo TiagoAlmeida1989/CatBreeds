@@ -128,7 +128,6 @@ final class BreedsListFeatureTests: XCTestCase {
         }
 
         await store.send(.loadNextPageIfNeeded(.abyssinian)) {
-            $0.loadState = .loadingNextPage
             $0.paginationFooterState = .loading
         }
 
@@ -161,7 +160,6 @@ final class BreedsListFeatureTests: XCTestCase {
         }
 
         await store.send(.loadNextPageIfNeeded(.abyssinian)) {
-            $0.loadState = .loadingNextPage
             $0.paginationFooterState = .loading
         }
 
@@ -199,7 +197,6 @@ final class BreedsListFeatureTests: XCTestCase {
         }
 
         await store.send(.retryNextPageTapped) {
-            $0.loadState = .loadingNextPage
             $0.paginationFooterState = .loading
         }
 
