@@ -5,71 +5,68 @@ struct BreedsListView: View {
     @Bindable var store: StoreOf<BreedsListFeature>
 
     var body: some View {
-        VStack(spacing: 0) {
-            List {
-                switch store.viewState {
-                case .loading:
-                    ProgressView()
-                        .frame(maxWidth: .infinity, minHeight: 280)
-                        .listRowSeparator(.hidden)
-
-                case let .error(message):
-                    ErrorStateView(
-                        title: "Unable to load breeds",
-                        message: message,
-                        retryAction: {
-                            store.send(.retryTapped)
-                        }
-                    )
+        List {
+            switch store.viewState {
+            case .loading:
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 280)
                     .listRowSeparator(.hidden)
 
-                case .emptySearch:
-                    EmptyStateView(
-                        title: "No results",
-                        message: "Try searching for another breed name.",
-                        systemImage: "magnifyingglass"
-                    )
-                    .listRowSeparator(.hidden)
-
-                case .empty:
-                    EmptyStateView(
-                        title: "No breeds available",
-                        message: "Pull to refresh and try loading breeds again.",
-                        systemImage: "cat"
-                    )
-                    .listRowSeparator(.hidden)
-
-                case .content:
-                    ForEach(store.filteredBreeds) { breed in
-                        NavigationLink(value: breed.id) {
-                            BreedRowView(
-                                breed: breed,
-                                onFavoriteTap: {
-                                    store.send(.favoriteButtonTapped(breed.id))
-                                }
-                            )
-                        }
-                        .onAppear {
-                            store.send(.loadNextPageIfNeeded(breed))
-                        }
-                    }
-                }
-            }
-            .listStyle(.plain)
-            .refreshable {
-                await store.send(.refreshPulled).finish()
-            }
-
-            if store.viewState == .content,
-               store.paginationFooterState != .hidden {
-                PaginationFooterView(
-                    state: store.paginationFooterState,
+            case let .error(message):
+                ErrorStateView(
+                    title: "Unable to load breeds",
+                    message: message,
                     retryAction: {
-                        store.send(.retryNextPageTapped)
+                        store.send(.retryTapped)
                     }
                 )
-                .background(.background)
+                .listRowSeparator(.hidden)
+
+            case .emptySearch:
+                EmptyStateView(
+                    title: "No results",
+                    message: "Try searching for another breed name.",
+                    systemImage: "magnifyingglass"
+                )
+                .listRowSeparator(.hidden)
+
+            case .empty:
+                EmptyStateView(
+                    title: "No breeds available",
+                    message: "Pull to refresh and try loading breeds again.",
+                    systemImage: "cat"
+                )
+                .listRowSeparator(.hidden)
+
+            case .content:
+                ForEach(store.filteredBreeds) { breed in
+                    NavigationLink(value: breed.id) {
+                        BreedRowView(
+                            breed: breed,
+                            onFavoriteTap: {
+                                store.send(.favoriteButtonTapped(breed.id))
+                            }
+                        )
+                    }
+                    .onAppear {
+                        store.send(.loadNextPageIfNeeded(breed))
+                    }
+                }
+                if store.paginationFooterState != .hidden {
+                    PaginationFooterView(
+                        state: store.paginationFooterState,
+                        retryAction: { store.send(.retryNextPageTapped) }
+                    )
+                    .frame(maxWidth: .infinity)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
             }
+        }
+        .listStyle(.plain)
+        .animation(.easeInOut(duration: 0.25), value: store.paginationFooterState)
+        .refreshable {
+            await store.send(.refreshPulled).finish()
         }
         .navigationTitle("Cat Breeds")
         .searchable(
