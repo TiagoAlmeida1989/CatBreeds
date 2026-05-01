@@ -8,18 +8,18 @@ An iOS app built with SwiftUI that lets you explore cat breeds using [The Cat AP
 
 ## API Key Setup
 
-This project uses [The Cat API](https://thecatapi.com/). The API key is injected at build time via a Run Script build phase and is never committed to the repository.
+This project uses [The Cat API](https://thecatapi.com/). The API key is never committed to the repository.
 
 **How it works:**  
-`Secrets.xcconfig` defines `CAT_API_KEY`. A "Generate Secrets" build phase runs before compilation, reading `$CAT_API_KEY` from the build environment and writing it into `CatBreeds/App/GeneratedSecrets.swift`. The app reads the key from that generated Swift constant — no Info.plist manipulation, no runtime Bundle lookups.
+`Secrets.xcconfig` defines `CAT_API_KEY`. The project build settings map it into the auto-generated `Info.plist` via `INFOPLIST_KEY_CAT_API_KEY = $(CAT_API_KEY)`. At runtime, `APIConfiguration` reads it from `Bundle.main.infoDictionary` — no build phase scripts, no generated Swift files.
 
 **Setup:**
 1. Copy `Secrets.example.xcconfig` to `Secrets.xcconfig` at the project root
 2. Replace `your_cat_api_key_here` with your own key from [thecatapi.com](https://thecatapi.com/)
 3. In Xcode: **Project → Info → Configurations** → set `Secrets.xcconfig` for both Debug and Release (at project level and at the CatBreeds target level)
-4. Build and run — the build phase generates `GeneratedSecrets.swift` with your real key
+4. Build and run
 
-> **Note:** `GeneratedSecrets.swift` is committed with a placeholder value so the project always compiles. After building with a real key, run `git update-index --skip-worktree CatBreeds/App/GeneratedSecrets.swift` to prevent accidentally committing your key. In a production environment, API keys should not be shipped inside the mobile app binary — a backend proxy would be the preferred approach.
+> **Note:** In a production environment, API keys should not be shipped inside the mobile app binary — a backend proxy would be the preferred approach.
 
 **CI:** The GitHub Actions workflow creates `Secrets.xcconfig` from the `CAT_API_KEY` repository secret before building.
 

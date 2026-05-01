@@ -7,10 +7,15 @@ struct APIConfiguration: Equatable {
 }
 
 extension APIConfiguration: DependencyKey {
-    static let liveValue = APIConfiguration(
-        baseURL: URL(string: "https://api.thecatapi.com/v1")!,
-        apiKey: GeneratedSecrets.catAPIKey
-    )
+    static var liveValue: APIConfiguration {
+        guard let apiKey = Bundle.main.infoDictionary?["CAT_API_KEY"] as? String, !apiKey.isEmpty else {
+            fatalError("CAT_API_KEY not found in Info.plist — ensure Secrets.xcconfig is configured")
+        }
+        return APIConfiguration(
+            baseURL: URL(string: "https://api.thecatapi.com/v1")!,
+            apiKey: apiKey
+        )
+    }
 
     static let testValue = APIConfiguration(
         baseURL: URL(string: "https://api.thecatapi.com/v1")!,
