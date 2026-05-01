@@ -23,10 +23,13 @@ struct BreedsListContentView: View {
         }
 
         if paginationFooterState != .hidden {
-            BreedsPaginationFooterView(
+            PaginationFooterView(
                 state: paginationFooterState,
                 retryAction: onRetryNextPageTap
             )
+            .frame(maxWidth: .infinity)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
         }
     }
 }

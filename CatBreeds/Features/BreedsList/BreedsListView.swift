@@ -14,6 +14,7 @@ struct BreedsListView: View {
                 errorState(message)
 
             case .emptySearch:
+                
                 emptySearchState
 
             case .empty:
