@@ -1,4 +1,5 @@
 import SwiftUI
+import NukeUI
 
 struct BreedDetailView: View {
     let breed: Breed
@@ -7,25 +8,18 @@ struct BreedDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                AsyncImage(url: breed.image?.url) { phase in
-                    switch phase {
-                    case let .success(image):
+                LazyImage(url: breed.image?.url) { state in
+                    if let image = state.image {
                         image
                             .resizable()
                             .scaledToFill()
-
-                    case .failure:
-                        Image(systemName: "photo")
-                            .font(.largeTitle)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                    case .empty:
-                        ProgressView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                    @unknown default:
-                        EmptyView()
+                    } else {
+                        Color.gray.opacity(0.2)
+                            .overlay {
+                                Image(systemName: "photo")
+                                    .font(.largeTitle)
+                                    .foregroundStyle(.gray)
+                            }
                     }
                 }
                 .frame(height: 280)
