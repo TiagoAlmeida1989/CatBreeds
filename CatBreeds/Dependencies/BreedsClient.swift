@@ -8,18 +8,19 @@ struct BreedsClient {
 extension BreedsClient: DependencyKey {
     static let liveValue = BreedsClient(
         fetchBreeds: { page, limit in
-            let apiClient = await DefaultAPIClient(
+            let apiClient = DefaultAPIClient(
                 httpClient: URLSessionHTTPClient(),
                 requestBuilder: DefaultRequestBuilder()
             )
 
-            let remoteDataSource = await DefaultCatBreedsRemoteDataSource(
+            let remoteDataSource = DefaultCatBreedsRemoteDataSource(
                 apiClient: apiClient
             )
 
-            let localDataSource = await SwiftDataBreedsLocalDataSource()
+            let container = await MainActor.run { SwiftDataStack.shared }
+            let localDataSource = SwiftDataBreedsLocalDataSource(container: container)
 
-            let repository = await DefaultBreedsRepository(
+            let repository = DefaultBreedsRepository(
                 remoteDataSource: remoteDataSource,
                 localDataSource: localDataSource
             )

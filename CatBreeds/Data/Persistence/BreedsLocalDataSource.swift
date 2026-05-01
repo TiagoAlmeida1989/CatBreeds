@@ -8,9 +8,20 @@ protocol BreedsLocalDataSource {
 }
 
 struct SwiftDataBreedsLocalDataSource: BreedsLocalDataSource {
+    private let container: ModelContainer
+    private let imageCache: ImageCacheDataSource
+
+    init(
+        container: ModelContainer,
+        imageCache: ImageCacheDataSource = NukeImageCacheDataSource()
+    ) {
+        self.container = container
+        self.imageCache = imageCache
+    }
+
     func saveBreeds(_ breeds: [Breed], page: Int) async throws {
         try await MainActor.run {
-            let context = ModelContext(SwiftDataStack.shared)
+            let context = ModelContext(container)
 
             let descriptor = FetchDescriptor<CachedBreedEntity>(
                 predicate: #Predicate { $0.page == page }
@@ -35,7 +46,7 @@ struct SwiftDataBreedsLocalDataSource: BreedsLocalDataSource {
 
     func fetchBreeds(page: Int) async throws -> [Breed] {
         try await MainActor.run {
-            let context = ModelContext(SwiftDataStack.shared)
+            let context = ModelContext(container)
 
             let descriptor = FetchDescriptor<CachedBreedEntity>(
                 predicate: #Predicate { $0.page == page },
@@ -48,9 +59,10 @@ struct SwiftDataBreedsLocalDataSource: BreedsLocalDataSource {
 
     func deleteAllBreeds() async throws {
         try await MainActor.run {
-            let context = ModelContext(SwiftDataStack.shared)
+            let context = ModelContext(container)
             try context.delete(model: CachedBreedEntity.self)
             try context.save()
         }
+        imageCache.removeAll()
     }
 }
