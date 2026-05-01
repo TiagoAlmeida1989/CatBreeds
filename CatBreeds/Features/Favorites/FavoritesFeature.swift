@@ -16,6 +16,10 @@ struct FavoritesFeature {
             guard !values.isEmpty else { return nil }
             return values.reduce(0, +) / Double(values.count)
         }
+
+        mutating func removeFavorite(id: Breed.ID) {
+            breeds.removeAll { $0.id == id }
+        }
     }
 
     enum ViewState: Equatable {
@@ -31,7 +35,7 @@ struct FavoritesFeature {
         Reduce { state, action in
             switch action {
             case let .favoriteButtonTapped(id):
-                state.breeds.removeAll { $0.id == id }
+                state.removeFavorite(id: id)
                 return .none
             }
         }
