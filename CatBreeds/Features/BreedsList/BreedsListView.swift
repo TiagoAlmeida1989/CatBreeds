@@ -8,35 +8,16 @@ struct BreedsListView: View {
         List {
             switch store.viewState {
             case .loading:
-                ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 280)
-                    .listRowSeparator(.hidden)
+                loadingState
 
             case let .error(message):
-                ErrorStateView(
-                    title: "Unable to load breeds",
-                    message: message,
-                    retryAction: {
-                        store.send(.retryTapped)
-                    }
-                )
-                .listRowSeparator(.hidden)
+                errorState(message)
 
             case .emptySearch:
-                EmptyStateView(
-                    title: "No results",
-                    message: "Try searching for another breed name.",
-                    systemImage: "magnifyingglass"
-                )
-                .listRowSeparator(.hidden)
+                emptySearchState
 
             case .empty:
-                EmptyStateView(
-                    title: "No breeds available",
-                    message: "Pull to refresh and try loading breeds again.",
-                    systemImage: "cat"
-                )
-                .listRowSeparator(.hidden)
+                emptyState
 
             case .content:
                 contentRows
@@ -70,7 +51,6 @@ struct BreedsListView: View {
     }
     
     
-    
     @ViewBuilder
     private var contentRows: some View {
         ForEach(store.filteredBreeds) { breed in
@@ -79,7 +59,7 @@ struct BreedsListView: View {
         
         paginationFooter
     }
-    
+
     private func breedRow(_ breed: Breed) -> some View {
         NavigationLink(value: breed.id) {
             BreedRowView(
@@ -93,7 +73,7 @@ struct BreedsListView: View {
             store.send(.loadNextPageIfNeeded(breed))
         }
     }
-    
+
     @ViewBuilder
     private var paginationFooter: some View {
         if store.paginationFooterState != .hidden {
@@ -108,5 +88,39 @@ struct BreedsListView: View {
             .listRowBackground(Color.clear)
         }
     }
-    
+
+    private var loadingState: some View {
+        ProgressView()
+            .frame(maxWidth: .infinity, minHeight: 280)
+            .listRowSeparator(.hidden)
+    }
+
+    private func errorState(_ message: String) -> some View {
+        ErrorStateView(
+            title: "Unable to load breeds",
+            message: message,
+            retryAction: {
+                store.send(.retryTapped)
+            }
+        )
+        .listRowSeparator(.hidden)
+    }
+
+    private var emptySearchState: some View {
+        EmptyStateView(
+            title: "No results",
+            message: "Try searching for another breed name.",
+            systemImage: "magnifyingglass"
+        )
+        .listRowSeparator(.hidden)
+    }
+
+    private var emptyState: some View {
+        EmptyStateView(
+            title: "No breeds available",
+            message: "Pull to refresh and try loading breeds again.",
+            systemImage: "cat"
+        )
+        .listRowSeparator(.hidden)
+    }
 }
