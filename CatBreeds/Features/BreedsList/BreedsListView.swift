@@ -69,16 +69,13 @@ struct BreedsListView: View {
 
     @ViewBuilder
     private var paginationFooter: some View {
-        if store.paginationFooterState != .hidden {
-            PaginationFooterView(
+        if store.hasPaginationFooter {
+            BreedsPaginationFooterView(
                 state: store.paginationFooterState,
                 retryAction: {
                     store.send(.retryNextPageTapped)
                 }
             )
-            .frame(maxWidth: .infinity)
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
         }
     }
 
