@@ -123,6 +123,73 @@ struct AppFeatureTests {
         }
     }
 
+    // MARK: - Detail Delegate Integration
+
+    @Test
+    func favoriteToggledFromDetailInBreedsListAddsToFavorites() async {
+        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
+        let spy = FavoritesPersistenceSpy()
+        var state = AppFeature.State()
+        state.breedsList.breeds = [abyssinian]
+        state.breedsList.detail = BreedDetailFeature.State(breed: abyssinian, isFavorite: false)
+
+        let store = TestStore(initialState: state) { AppFeature() }
+        store.dependencies.favoritesPersistenceClient.saveFavorite = { breed in
+            try await spy.saveFavorite(breed)
+        }
+        store.dependencies.favoritesPersistenceClient.removeFavorite = { id in
+            try await spy.removeFavorite(id)
+        }
+
+        await store.send(.breedsList(.detail(.presented(.favoriteButtonTapped)))) {
+            $0.breedsList.detail?.isFavorite = true
+        }
+
+        await store.receive(.breedsList(.detail(.presented(.delegate(.favoriteToggled(abyssinian.id))))))
+
+        await store.receive(.breedsList(.favoriteButtonTapped(abyssinian.id))) {
+            $0.breedsList.favoriteIDs = [abyssinian.id]
+            $0.favoriteIDs = [abyssinian.id]
+            $0.favorites.breeds = [abyssinian]
+        }
+
+        await store.finish()
+        #expect(await spy.savedFavorites() == [abyssinian])
+    }
+
+    @Test
+    func favoriteToggledFromDetailInFavoritesRemovesFromFavorites() async {
+        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
+        let spy = FavoritesPersistenceSpy()
+
+        var state = AppFeature.State()
+        state.favorites.breeds = [abyssinian]
+        state.favoriteIDs = [abyssinian.id]
+        state.breedsList.favoriteIDs = [abyssinian.id]
+        state.favorites.detail = BreedDetailFeature.State(breed: abyssinian, isFavorite: true)
+
+        let store = TestStore(initialState: state) { AppFeature() }
+        store.dependencies.favoritesPersistenceClient.saveFavorite = { _ in }
+        store.dependencies.favoritesPersistenceClient.removeFavorite = { id in
+            try await spy.removeFavorite(id)
+        }
+
+        await store.send(.favorites(.detail(.presented(.favoriteButtonTapped)))) {
+            $0.favorites.detail?.isFavorite = false
+        }
+
+        await store.receive(.favorites(.detail(.presented(.delegate(.favoriteToggled(abyssinian.id))))))
+
+        await store.receive(.favorites(.favoriteButtonTapped(abyssinian.id))) {
+            $0.favorites.breeds = []
+            $0.favoriteIDs = []
+            $0.breedsList.favoriteIDs = []
+        }
+
+        await store.finish()
+        #expect(await spy.removedFavoriteIDs() == [abyssinian.id])
+    }
+
     // MARK: - Favorites Integration
 
     @Test
