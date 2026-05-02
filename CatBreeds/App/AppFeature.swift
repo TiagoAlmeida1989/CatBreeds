@@ -110,5 +110,11 @@ struct AppFeature {
                 return .none
             }
         }
+        .onChange(of: \.favoriteIDs) { _, newIDs in
+            Reduce { state, _ in
+                state.breedsList.favoriteIDs = newIDs
+                return .none
+            }
+        }
     }
 }

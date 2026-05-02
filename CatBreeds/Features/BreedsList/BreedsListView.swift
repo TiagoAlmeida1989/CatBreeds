@@ -4,7 +4,6 @@ import ComposableArchitecture
 
 struct BreedsListView: View {
     @Bindable var store: StoreOf<BreedsListFeature>
-    let favoriteIDs: Set<Breed.ID>
 
     var body: some View {
         List {
@@ -50,10 +49,10 @@ struct BreedsListView: View {
     private var contentRows: some View {
         BreedsListContentView(
             breeds: store.filteredBreeds,
-            favoriteIDs: favoriteIDs,
+            favoriteIDs: store.favoriteIDs,
             paginationFooterState: store.paginationFooterState,
             onBreedTap: { breed in
-                store.send(.breedTapped(breed, isFavorite: favoriteIDs.contains(breed.id)))
+                store.send(.breedTapped(breed))
             },
             onBreedAppear: { breed in
                 store.send(.loadNextPageIfNeeded(breed))

@@ -14,8 +14,7 @@ struct AppView: View {
         ) {
             NavigationStack {
                 BreedsListView(
-                    store: store.scope(state: \.breedsList, action: \.breedsList),
-                    favoriteIDs: store.favoriteIDs
+                    store: store.scope(state: \.breedsList, action: \.breedsList)
                 )
             }
             .tabItem {
