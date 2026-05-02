@@ -59,10 +59,6 @@ struct BreedsListFeature {
             !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
 
-        var hasPaginationFooter: Bool {
-            paginationFooterState != .hidden
-        }
-
         var canRequestNextPage: Bool {
             !isSearching && canLoadMore
         }
@@ -75,11 +71,11 @@ struct BreedsListFeature {
             }
         }
         
-        var isEmpty: Bool {
+        private var isEmpty: Bool {
             breeds.isEmpty
         }
 
-        var isFilteredEmpty: Bool {
+        private var isFilteredEmpty: Bool {
             filteredBreeds.isEmpty
         }
 
