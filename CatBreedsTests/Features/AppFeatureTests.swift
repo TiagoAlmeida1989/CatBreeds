@@ -39,7 +39,6 @@ struct AppFeatureTests {
         await store.receive(.favoritesLoaded(.success([abyssinian]))) {
             $0.favorites.breeds = [abyssinian]
             $0.favoriteIDs = [abyssinian.id]
-            $0.breedsList.favoriteIDs = [abyssinian.id]
         }
 
         #expect(await spy.fetchFavoritesCallCount() == 1)
@@ -74,7 +73,6 @@ struct AppFeatureTests {
         )
 
         await store.send(.breedsList(.favoriteButtonTapped(abyssinian.id))) {
-            $0.breedsList.favoriteIDs = [abyssinian.id]
             $0.favoriteIDs = [abyssinian.id]
             $0.favorites.breeds = [abyssinian]
         }
@@ -96,7 +94,6 @@ struct AppFeatureTests {
         )
 
         await store.send(.breedsList(.favoriteButtonTapped(abyssinian.id))) {
-            $0.breedsList.favoriteIDs = []
             $0.favoriteIDs = []
             $0.favorites.breeds = []
         }
@@ -105,22 +102,6 @@ struct AppFeatureTests {
 
         #expect(await spy.savedFavorites() == [])
         #expect(await spy.removedFavoriteIDs() == [abyssinian.id])
-    }
-
-    @Test
-    func breedsListResponseSyncsFavoriteIDsIntoBreedsList() async {
-        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
-        let bengal = Breed.makeBreed(id: "beng", name: "Bengal")
-        let page = makeBreedsPage(breeds: [abyssinian, bengal], hasNextPage: true)
-        let store = makeStore(favoritesBreeds: [abyssinian])
-
-        await store.send(.breedsList(.breedsResponse(.success(page), .initial))) {
-            $0.breedsList.breeds = page.breeds
-            $0.breedsList.favoriteIDs = [abyssinian.id]
-            $0.breedsList.nextPage = 1
-            $0.breedsList.canLoadMore = true
-            $0.breedsList.loadState = .idle
-        }
     }
 
     // MARK: - Detail Delegate Integration
@@ -148,7 +129,6 @@ struct AppFeatureTests {
         await store.receive(.breedsList(.detail(.presented(.delegate(.favoriteToggled(abyssinian.id))))))
 
         await store.receive(.breedsList(.favoriteButtonTapped(abyssinian.id))) {
-            $0.breedsList.favoriteIDs = [abyssinian.id]
             $0.favoriteIDs = [abyssinian.id]
             $0.favorites.breeds = [abyssinian]
         }
@@ -165,7 +145,6 @@ struct AppFeatureTests {
         var state = AppFeature.State()
         state.favorites.breeds = [abyssinian]
         state.favoriteIDs = [abyssinian.id]
-        state.breedsList.favoriteIDs = [abyssinian.id]
         state.favorites.detail = BreedDetailFeature.State(breed: abyssinian, isFavorite: true)
 
         let store = TestStore(initialState: state) { AppFeature() }
@@ -183,7 +162,6 @@ struct AppFeatureTests {
         await store.receive(.favorites(.favoriteButtonTapped(abyssinian.id))) {
             $0.favorites.breeds = []
             $0.favoriteIDs = []
-            $0.breedsList.favoriteIDs = []
         }
 
         await store.finish()
@@ -205,7 +183,6 @@ struct AppFeatureTests {
         await store.send(.favorites(.favoriteButtonTapped(abyssinian.id))) {
             $0.favorites.breeds = []
             $0.favoriteIDs = []
-            $0.breedsList.favoriteIDs = []
         }
 
         await store.finish()
@@ -226,7 +203,6 @@ private extension AppFeatureTests {
         state.breedsList.breeds = breedsListBreeds
         state.favorites.breeds = favoritesBreeds
         state.favoriteIDs = Set(favoritesBreeds.map(\.id))
-        state.breedsList.favoriteIDs = state.favoriteIDs
 
         let store = TestStore(initialState: state) {
             AppFeature()

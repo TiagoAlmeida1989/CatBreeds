@@ -45,7 +45,6 @@ struct BreedsListFeature {
     @ObservableState
     struct State: Equatable {
         var breeds: [Breed] = []
-        var favoriteIDs: Set<Breed.ID> = []
         @Presents var detail: BreedDetailFeature.State?
         var searchText = ""
 
@@ -153,9 +152,6 @@ struct BreedsListFeature {
             }
         }
 
-        mutating func setDetail(breed: Breed, isFavorite: Bool) {
-            detail = BreedDetailFeature.State(breed: breed, isFavorite: isFavorite)
-        }
     }
 
     // MARK: - Action
@@ -167,7 +163,7 @@ struct BreedsListFeature {
         case loadNextPageIfNeeded(Breed)
         case retryNextPageTapped
 
-        case breedTapped(Breed)
+        case breedTapped(Breed, isFavorite: Bool)
         case searchTextChanged(String)
         case favoriteButtonTapped(Breed.ID)
 
@@ -234,8 +230,8 @@ struct BreedsListFeature {
 
             // MARK: - Detail
 
-            case let .breedTapped(breed):
-                state.setDetail(breed: breed, isFavorite: state.favoriteIDs.contains(breed.id))
+            case let .breedTapped(breed, isFavorite):
+                state.detail = BreedDetailFeature.State(breed: breed, isFavorite: isFavorite)
                 return .none
 
             case let .detail(.presented(.delegate(.favoriteToggled(id)))):

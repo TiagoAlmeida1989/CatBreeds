@@ -49,8 +49,6 @@ struct AppFeature {
                 } else {
                     state.favoriteIDs.remove(id)
                 }
-                state.breedsList.favoriteIDs = state.favoriteIDs
-
                 if isNowFavorite {
                     guard let breed = state.breedsList.breeds.first(where: { $0.id == id }) else {
                         return .none
@@ -74,16 +72,11 @@ struct AppFeature {
                     }
                 }
 
-            case .breedsList(.breedsResponse):
-                state.breedsList.favoriteIDs = state.favoriteIDs
-                return .none
-
             case .breedsList:
                 return .none
 
             case let .favorites(.favoriteButtonTapped(id)):
                 state.favoriteIDs.remove(id)
-                state.breedsList.favoriteIDs = state.favoriteIDs
                 state.favorites.breeds.removeAll { $0.id == id }
                 return .run { _ in
                     do {
@@ -111,7 +104,6 @@ struct AppFeature {
             case let .favoritesLoaded(.success(favorites)):
                 state.favorites.breeds = favorites
                 state.favoriteIDs = Set(favorites.map(\.id))
-                state.breedsList.favoriteIDs = state.favoriteIDs
                 return .none
 
             case .favoritesLoaded(.failure):
