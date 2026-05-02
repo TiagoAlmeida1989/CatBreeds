@@ -36,8 +36,10 @@ struct BreedsListView: View {
                 set: { store.send(.searchTextChanged($0)) }
             )
         )
-        .navigationDestination(for: Breed.ID.self) { breedID in
-            breedDetailDestination(for: breedID)
+        .navigationDestination(
+            item: $store.scope(state: \.detail, action: \.detail)
+        ) { detailStore in
+            BreedDetailView(store: detailStore)
         }
         .task {
             await store.send(.task).finish()
@@ -49,6 +51,9 @@ struct BreedsListView: View {
             breeds: store.filteredBreeds,
             favoriteIDs: store.favoriteIDs,
             paginationFooterState: store.paginationFooterState,
+            onBreedTap: { breed in
+                store.send(.breedTapped(breed))
+            },
             onBreedAppear: { breed in
                 store.send(.loadNextPageIfNeeded(breed))
             },
@@ -94,18 +99,5 @@ struct BreedsListView: View {
             systemImage: "cat"
         )
         .listRowSeparator(.hidden)
-    }
-    
-    @ViewBuilder
-    private func breedDetailDestination(for breedID: Breed.ID) -> some View {
-        if let breed = store.breeds.first(where: { $0.id == breedID }) {
-            BreedDetailView(
-                breed: breed,
-                isFavorite: store.favoriteIDs.contains(breedID),
-                onFavoriteTap: {
-                    store.send(.favoriteButtonTapped(breed.id))
-                }
-            )
-        }
     }
 }

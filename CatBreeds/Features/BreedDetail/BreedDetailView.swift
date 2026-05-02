@@ -1,53 +1,54 @@
 import CatBreedsCore
 import SwiftUI
+import ComposableArchitecture
 
 struct BreedDetailView: View {
-    let breed: Breed
-    let isFavorite: Bool
-    let onFavoriteTap: () -> Void
+    let store: StoreOf<BreedDetailFeature>
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                BreedDetailImageView(imageURL: breed.image?.url)
+                BreedDetailImageView(imageURL: store.breed.image?.url)
 
                 VStack(alignment: .leading, spacing: 16) {
-                    Text(breed.name)
+                    Text(store.breed.name)
                         .font(.largeTitle.bold())
                         .fixedSize(horizontal: false, vertical: true)
 
                     InfoChipView(
                         systemImage: "mappin.and.ellipse",
-                        text: breed.origin
+                        text: store.breed.origin
                     )
                     .accessibilityIdentifier(AccessibilityIdentifiers.BreedDetail.originChip)
 
                     BreedDetailInfoSection(
                         title: "Temperament",
-                        value: breed.temperament
+                        value: store.breed.temperament
                     )
 
                     BreedDetailInfoSection(
                         title: "Description",
-                        value: breed.description
+                        value: store.breed.description
                     )
 
                     BreedDetailInfoSection(
                         title: "Lifespan",
-                        value: breed.lifeSpan.displayValue
+                        value: store.breed.lifeSpan.displayValue
                     )
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 28)
             }
         }
-        .navigationTitle(breed.name)
+        .navigationTitle(store.breed.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: onFavoriteTap) {
-                    Image(systemName: isFavorite ? "star.fill" : "star")
-                        .foregroundStyle(isFavorite ? .yellow : .primary)
+                Button {
+                    store.send(.favoriteButtonTapped)
+                } label: {
+                    Image(systemName: store.isFavorite ? "star.fill" : "star")
+                        .foregroundStyle(store.isFavorite ? .yellow : .primary)
                 }
                 .accessibilityIdentifier(AccessibilityIdentifiers.BreedDetail.favouriteButton)
             }

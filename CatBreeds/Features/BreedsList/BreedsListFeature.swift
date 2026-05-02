@@ -46,6 +46,7 @@ struct BreedsListFeature {
     struct State: Equatable {
         var breeds: [Breed] = []
         var favoriteIDs: Set<Breed.ID> = []
+        @Presents var detail: BreedDetailFeature.State?
         var searchText = ""
 
         var nextPage = 0
@@ -159,6 +160,10 @@ struct BreedsListFeature {
                 favoriteIDs.insert(id)
             }
         }
+
+        mutating func setDetail(breed: Breed, isFavorite: Bool) {
+            detail = BreedDetailFeature.State(breed: breed, isFavorite: isFavorite)
+        }
     }
 
     // MARK: - Action
@@ -170,10 +175,12 @@ struct BreedsListFeature {
         case loadNextPageIfNeeded(Breed)
         case retryNextPageTapped
 
+        case breedTapped(Breed)
         case searchTextChanged(String)
         case favoriteButtonTapped(Breed.ID)
 
         case breedsResponse(Result<BreedsPage, APIError>, BreedsListLoadType)
+        case detail(PresentationAction<BreedDetailFeature.Action>)
     }
 
     // MARK: - Dependencies
@@ -233,6 +240,18 @@ struct BreedsListFeature {
                 state.startNextPageLoading()
                 return load(page: state.nextPage, type: .nextPage)
 
+            // MARK: - Detail
+
+            case let .breedTapped(breed):
+                state.setDetail(breed: breed, isFavorite: state.favoriteIDs.contains(breed.id))
+                return .none
+
+            case let .detail(.presented(.delegate(.favoriteToggled(id)))):
+                return .send(.favoriteButtonTapped(id))
+
+            case .detail:
+                return .none
+
             // MARK: - Search
 
             case let .searchTextChanged(text):
@@ -257,6 +276,9 @@ struct BreedsListFeature {
                 state.applyFailure(error, loadType: loadType)
                 return .none
             }
+        }
+        .ifLet(\.$detail, action: \.detail) {
+            BreedDetailFeature()
         }
     }
 

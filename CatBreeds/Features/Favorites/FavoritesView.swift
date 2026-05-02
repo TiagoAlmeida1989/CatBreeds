@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableArchitecture
 
 struct FavoritesView: View {
-    let store: StoreOf<FavoritesFeature>
+    @Bindable var store: StoreOf<FavoritesFeature>
 
     var body: some View {
         Group {
@@ -14,27 +14,25 @@ struct FavoritesView: View {
                     message: "Start adding breeds to your favorites.",
                     systemImage: "cat"
                 )
+
             case .content:
                 FavoritesListContentView(
                     breeds: store.breeds,
                     averageLifespan: store.averageLifespan,
+                    onBreedTap: { breed in
+                        store.send(.breedTapped(breed))
+                    },
                     onFavoriteTap: { id in
                         store.send(.favoriteButtonTapped(id))
                     }
                 )
-                
             }
         }
         .navigationTitle("Favorites")
-        .navigationDestination(for: Breed.self) { selectedBreed in
-            let breed = store.breeds.first { $0.id == selectedBreed.id } ?? selectedBreed
-            BreedDetailView(
-                breed: breed,
-                isFavorite: store.breeds.contains(where: { $0.id == selectedBreed.id }),
-                onFavoriteTap: {
-                    store.send(.favoriteButtonTapped(selectedBreed.id))
-                }
-            )
+        .navigationDestination(
+            item: $store.scope(state: \.detail, action: \.detail)
+        ) { detailStore in
+            BreedDetailView(store: detailStore)
         }
     }
 }

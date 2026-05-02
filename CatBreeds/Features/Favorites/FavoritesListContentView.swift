@@ -4,6 +4,7 @@ import SwiftUI
 struct FavoritesListContentView: View {
     let breeds: [Breed]
     let averageLifespan: String?
+    let onBreedTap: (Breed) -> Void
     let onFavoriteTap: (Breed.ID) -> Void
 
     var body: some View {
@@ -16,15 +17,25 @@ struct FavoritesListContentView: View {
             }
 
             ForEach(breeds) { breed in
-                NavigationLink(value: breed) {
-                    BreedRowView(
-                        breed: breed,
-                        isFavorite: true,
-                        onFavoriteTap: {
-                            onFavoriteTap(breed.id)
-                        }
-                    )
+                Button {
+                    onBreedTap(breed)
+                } label: {
+                    HStack {
+                        BreedRowView(
+                            breed: breed,
+                            isFavorite: true,
+                            onFavoriteTap: {
+                                onFavoriteTap(breed.id)
+                            }
+                        )
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
     }
