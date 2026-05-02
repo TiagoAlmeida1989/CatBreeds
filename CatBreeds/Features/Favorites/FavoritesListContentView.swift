@@ -17,25 +17,12 @@ struct FavoritesListContentView: View {
             }
 
             ForEach(breeds) { breed in
-                Button {
-                    onBreedTap(breed)
-                } label: {
-                    HStack {
-                        BreedRowView(
-                            breed: breed,
-                            isFavorite: true,
-                            onFavoriteTap: {
-                                onFavoriteTap(breed.id)
-                            }
-                        )
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                BreedRowButton(
+                    breed: breed,
+                    isFavorite: true,
+                    onTap: { onBreedTap(breed) },
+                    onFavoriteTap: { onFavoriteTap(breed.id) }
+                )
             }
         }
     }

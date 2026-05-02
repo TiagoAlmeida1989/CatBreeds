@@ -12,28 +12,13 @@ struct BreedsListContentView: View {
 
     var body: some View {
         ForEach(breeds) { breed in
-            Button {
-                onBreedTap(breed)
-            } label: {
-                HStack {
-                    BreedRowView(
-                        breed: breed,
-                        isFavorite: favoriteIDs.contains(breed.id),
-                        onFavoriteTap: {
-                            onFavoriteTap(breed.id)
-                        }
-                    )
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .onAppear {
-                onBreedAppear(breed)
-            }
+            BreedRowButton(
+                breed: breed,
+                isFavorite: favoriteIDs.contains(breed.id),
+                onTap: { onBreedTap(breed) },
+                onFavoriteTap: { onFavoriteTap(breed.id) }
+            )
+            .onAppear { onBreedAppear(breed) }
         }
 
         if paginationFooterState != .hidden {
