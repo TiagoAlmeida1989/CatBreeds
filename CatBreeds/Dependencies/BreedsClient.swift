@@ -7,30 +7,15 @@ struct BreedsClient {
 }
 
 extension BreedsClient: DependencyKey {
-    static let liveValue: BreedsClient = {
-        @Dependency(\.apiConfiguration) var apiConfiguration
-
-        let repository = DefaultBreedsRepository(
-            remoteDataSource: DefaultCatBreedsRemoteDataSource(
-                apiClient: DefaultAPIClient(
-                    httpClient: URLSessionHTTPClient(),
-                    requestBuilder: DefaultRequestBuilder(configuration: apiConfiguration)
-                )
-            ),
-            localDataSource: SwiftDataBreedsLocalDataSource(container: SwiftDataStack.shared)
-        )
-
+    static var liveValue: BreedsClient {
+        @Dependency(\.breedsRepository) var repository
         return BreedsClient(
-            fetchBreeds: { page, limit in
-                try await repository.fetchBreeds(page: page, limit: limit)
-            }
+            fetchBreeds: { try await repository.fetchBreeds(page: $0, limit: $1) }
         )
-    }()
+    }
 
     static let testValue = BreedsClient(
-        fetchBreeds: { _, _ in
-            throw APIError.requestFailed
-        }
+        fetchBreeds: { _, _ in throw APIError.requestFailed }
     )
 }
 
