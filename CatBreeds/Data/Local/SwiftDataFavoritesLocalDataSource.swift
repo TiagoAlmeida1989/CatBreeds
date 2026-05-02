@@ -10,47 +10,59 @@ struct SwiftDataFavoritesLocalDataSource: FavoritesLocalDataSource {
     }
 
     func fetchFavorites() async throws -> [Breed] {
-        try await MainActor.run {
-            let context = ModelContext(container)
-            let descriptor = FetchDescriptor<FavoriteBreedEntity>(
-                sortBy: [SortDescriptor(\.name)]
-            )
-            return try context.fetch(descriptor).map(\.domainModel)
+        do {
+            return try await MainActor.run {
+                let context = ModelContext(container)
+                let descriptor = FetchDescriptor<FavoriteBreedEntity>(
+                    sortBy: [SortDescriptor(\.name)]
+                )
+                return try context.fetch(descriptor).map(\.domainModel)
+            }
+        } catch {
+            throw PersistenceError.fetchFailed
         }
     }
 
     func saveFavorite(_ breed: Breed) async throws {
-        try await MainActor.run {
-            let context = ModelContext(container)
-            let id = breed.id
+        do {
+            try await MainActor.run {
+                let context = ModelContext(container)
+                let id = breed.id
 
-            var descriptor = FetchDescriptor<FavoriteBreedEntity>(
-                predicate: #Predicate { $0.id == id }
-            )
-            descriptor.fetchLimit = 1
+                var descriptor = FetchDescriptor<FavoriteBreedEntity>(
+                    predicate: #Predicate { $0.id == id }
+                )
+                descriptor.fetchLimit = 1
 
-            if let existing = try context.fetch(descriptor).first {
-                context.delete(existing)
+                if let existing = try context.fetch(descriptor).first {
+                    context.delete(existing)
+                }
+
+                context.insert(FavoriteBreedEntity(breed: breed))
+                try context.save()
             }
-
-            context.insert(FavoriteBreedEntity(breed: breed))
-            try context.save()
+        } catch {
+            throw PersistenceError.saveFailed
         }
     }
 
     func removeFavorite(id: Breed.ID) async throws {
-        try await MainActor.run {
-            let context = ModelContext(container)
+        do {
+            try await MainActor.run {
+                let context = ModelContext(container)
 
-            var descriptor = FetchDescriptor<FavoriteBreedEntity>(
-                predicate: #Predicate { $0.id == id }
-            )
-            descriptor.fetchLimit = 1
+                var descriptor = FetchDescriptor<FavoriteBreedEntity>(
+                    predicate: #Predicate { $0.id == id }
+                )
+                descriptor.fetchLimit = 1
 
-            if let existing = try context.fetch(descriptor).first {
-                context.delete(existing)
-                try context.save()
+                if let existing = try context.fetch(descriptor).first {
+                    context.delete(existing)
+                    try context.save()
+                }
             }
+        } catch {
+            throw PersistenceError.deleteFailed
         }
     }
 }

@@ -47,7 +47,7 @@ struct AppFeatureTests {
 
     @Test
     func taskFailureKeepsCurrentState() async {
-        let spy = FavoritesPersistenceSpy(fetchResult: .failure(.failed))
+        let spy = FavoritesPersistenceSpy(fetchResult: .failure(.fetchFailed))
         let store = makeStore(
             breedsListBreeds: [.abyssinian, .bengal],
             favoritesBreeds: [.maineCoon],
@@ -55,7 +55,7 @@ struct AppFeatureTests {
         )
 
         await store.send(.task)
-        await store.receive(.favoritesLoaded(.failure(.failed)))
+        await store.receive(.favoritesLoaded(.failure(.fetchFailed)))
 
         #expect(await spy.fetchFavoritesCallCount() == 1)
         #expect(store.state.breedsList.breeds == [.abyssinian, .bengal])

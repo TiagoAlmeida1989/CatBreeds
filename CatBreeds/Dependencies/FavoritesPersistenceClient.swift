@@ -3,7 +3,22 @@ import ComposableArchitecture
 import Foundation
 
 enum PersistenceError: Error, Equatable {
-    case failed
+    case fetchFailed
+    case saveFailed
+    case deleteFailed
+}
+
+extension PersistenceError {
+    var userMessage: String {
+        switch self {
+        case .fetchFailed:
+            return "Could not load your favorites. Please try again."
+        case .saveFailed:
+            return "Could not save your favorite. Please try again."
+        case .deleteFailed:
+            return "Could not remove your favorite. Please try again."
+        }
+    }
 }
 
 struct FavoritesPersistenceClient {

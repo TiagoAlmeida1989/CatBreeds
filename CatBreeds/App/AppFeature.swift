@@ -49,10 +49,15 @@ struct AppFeature {
                 }
 
                 return .run { _ in
-                    if breed.isFavorite {
-                        try await favoritesPersistenceClient.saveFavorite(breed)
-                    } else {
-                        try await favoritesPersistenceClient.removeFavorite(id)
+                    do {
+                        if breed.isFavorite {
+                            try await favoritesPersistenceClient.saveFavorite(breed)
+                        } else {
+                            try await favoritesPersistenceClient.removeFavorite(id)
+                        }
+                    } catch {
+                        // UI is updated optimistically. A future step will revert
+                        // state and surface an alert on persistence failure.
                     }
                 }
 
@@ -70,7 +75,12 @@ struct AppFeature {
                     return updatedBreed
                 }
                 return .run { _ in
-                    try await favoritesPersistenceClient.removeFavorite(id)
+                    do {
+                        try await favoritesPersistenceClient.removeFavorite(id)
+                    } catch {
+                        // UI is updated optimistically. A future step will revert
+                        // state and surface an alert on persistence failure.
+                    }
                 }
 
             case .favorites:
@@ -81,8 +91,10 @@ struct AppFeature {
                     do {
                         let favorites = try await favoritesPersistenceClient.fetchFavorites()
                         await send(.favoritesLoaded(.success(favorites)))
+                    } catch let error as PersistenceError {
+                        await send(.favoritesLoaded(.failure(error)))
                     } catch {
-                        await send(.favoritesLoaded(.failure(.failed)))
+                        await send(.favoritesLoaded(.failure(.fetchFailed)))
                     }
                 }
 
