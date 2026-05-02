@@ -21,7 +21,6 @@ struct UITestingApp: App {
                 }
             )
         }
-        .modelContainer(try! ModelContainer(for: Schema([])))
     }
 }
 #endif
