@@ -43,8 +43,7 @@ final class FavoriteBreedEntity {
                 url: imageURLString.flatMap(URL.init(string:)),
                 width: imageWidth,
                 height: imageHeight
-            ),
-            isFavorite: true
+            )
         )
     }
 }

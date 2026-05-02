@@ -12,6 +12,7 @@ struct AppFeature {
     @ObservableState
     struct State: Equatable {
         var selectedTab: AppTab = .breeds
+        var favoriteIDs: Set<Breed.ID> = []
         var breedsList = BreedsListFeature.State()
         var favorites = FavoritesFeature.State()
     }
@@ -42,44 +43,47 @@ struct AppFeature {
                 return .none
 
             case let .breedsList(.favoriteButtonTapped(id)):
-                state.favorites.breeds = state.breedsList.breeds.filter(\.isFavorite)
+                let isNowFavorite = state.breedsList.favoriteIDs.contains(id)
+                state.favoriteIDs = state.breedsList.favoriteIDs
 
-                guard let breed = state.breedsList.breeds.first(where: { $0.id == id }) else {
-                    return .none
-                }
-
-                return .run { _ in
-                    do {
-                        if breed.isFavorite {
+                if isNowFavorite {
+                    guard let breed = state.breedsList.breeds.first(where: { $0.id == id }) else {
+                        return .none
+                    }
+                    state.favorites.breeds.append(breed)
+                    return .run { [breed] _ in
+                        do {
                             try await favoritesPersistenceClient.saveFavorite(breed)
-                        } else {
-                            try await favoritesPersistenceClient.removeFavorite(id)
+                        } catch {
+                            // UI updated optimistically.
                         }
-                    } catch {
-                        // UI is updated optimistically. A future step will revert
-                        // state and surface an alert on persistence failure.
+                    }
+                } else {
+                    state.favorites.breeds.removeAll(where: { $0.id == id })
+                    return .run { _ in
+                        do {
+                            try await favoritesPersistenceClient.removeFavorite(id)
+                        } catch {
+                            // UI updated optimistically.
+                        }
                     }
                 }
 
             case .breedsList(.breedsResponse):
-                syncFavoritesIntoBreedsList(state: &state)
+                state.breedsList.favoriteIDs = state.favoriteIDs
                 return .none
 
             case .breedsList:
                 return .none
 
             case let .favorites(.favoriteButtonTapped(id)):
-                state.breedsList.breeds = state.breedsList.breeds.map { breed in
-                    var updatedBreed = breed
-                    if breed.id == id { updatedBreed.isFavorite = false }
-                    return updatedBreed
-                }
+                state.favoriteIDs.remove(id)
+                state.breedsList.favoriteIDs = state.favoriteIDs
                 return .run { _ in
                     do {
                         try await favoritesPersistenceClient.removeFavorite(id)
                     } catch {
-                        // UI is updated optimistically. A future step will revert
-                        // state and surface an alert on persistence failure.
+                        // UI updated optimistically.
                     }
                 }
 
@@ -100,22 +104,13 @@ struct AppFeature {
 
             case let .favoritesLoaded(.success(favorites)):
                 state.favorites.breeds = favorites
-                syncFavoritesIntoBreedsList(state: &state)
+                state.favoriteIDs = Set(favorites.map(\.id))
+                state.breedsList.favoriteIDs = state.favoriteIDs
                 return .none
 
             case .favoritesLoaded(.failure):
                 return .none
             }
-        }
-    }
-
-    private func syncFavoritesIntoBreedsList(state: inout State) {
-        let favoriteIDs = Set(state.favorites.breeds.map(\.id))
-
-        state.breedsList.breeds = state.breedsList.breeds.map { breed in
-            var updatedBreed = breed
-            updatedBreed.isFavorite = favoriteIDs.contains(breed.id)
-            return updatedBreed
         }
     }
 }

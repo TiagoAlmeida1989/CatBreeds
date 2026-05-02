@@ -37,8 +37,7 @@ extension Breed {
         temperament: "Unknown",
         description: "A breed without lifespan information.",
         lifeSpan: Lifespan(min: nil, max: nil),
-        imageURL: nil,
-        isFavorite: true
+        imageURL: nil
     )
 
     static func makeBreed(
@@ -48,8 +47,7 @@ extension Breed {
         temperament: String = "Unknown",
         description: String = "A test breed.",
         lifeSpan: Lifespan = Lifespan(min: 12, max: 15),
-        imageURL: URL? = URL(string: "https://example.com/cat.jpg"),
-        isFavorite: Bool = false
+        imageURL: URL? = URL(string: "https://example.com/cat.jpg")
     ) -> Breed {
         Breed(
             id: id,
@@ -65,8 +63,7 @@ extension Breed {
                     width: 640,
                     height: 480
                 )
-            },
-            isFavorite: isFavorite
+            }
         )
     }
 }
@@ -80,4 +77,3 @@ func makeBreedsPage(
         hasNextPage: hasNextPage
     )
 }
-

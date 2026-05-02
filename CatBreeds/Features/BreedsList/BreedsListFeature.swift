@@ -45,6 +45,7 @@ struct BreedsListFeature {
     @ObservableState
     struct State: Equatable {
         var breeds: [Breed] = []
+        var favoriteIDs: Set<Breed.ID> = []
         var searchText = ""
 
         var nextPage = 0
@@ -152,11 +153,11 @@ struct BreedsListFeature {
         }
 
         mutating func toggleFavorite(for id: Breed.ID) {
-            guard let index = breeds.firstIndex(where: { $0.id == id }) else {
-                return
+            if favoriteIDs.contains(id) {
+                favoriteIDs.remove(id)
+            } else {
+                favoriteIDs.insert(id)
             }
-            
-            breeds[index].isFavorite.toggle()
         }
     }
 

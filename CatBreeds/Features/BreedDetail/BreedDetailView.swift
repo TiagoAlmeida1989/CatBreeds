@@ -3,6 +3,7 @@ import SwiftUI
 
 struct BreedDetailView: View {
     let breed: Breed
+    let isFavorite: Bool
     let onFavoriteTap: () -> Void
 
     var body: some View {
@@ -45,8 +46,8 @@ struct BreedDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: onFavoriteTap) {
-                    Image(systemName: breed.isFavorite ? "star.fill" : "star")
-                        .foregroundStyle(breed.isFavorite ? .yellow : .primary)
+                    Image(systemName: isFavorite ? "star.fill" : "star")
+                        .foregroundStyle(isFavorite ? .yellow : .primary)
                 }
                 .accessibilityIdentifier(AccessibilityIdentifiers.BreedDetail.favouriteButton)
             }

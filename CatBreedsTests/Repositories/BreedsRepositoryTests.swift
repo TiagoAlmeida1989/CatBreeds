@@ -8,8 +8,8 @@ struct BreedsRepositoryTests {
     func fetchBreedsForFirstPageDeletesAllCachesThenReturnsCachedPage() async throws {
         let remotePage = makeBreedsPage(breeds: [.abyssinian, .bengal], hasNextPage: true)
         let cachedBreeds = [
-            Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: true),
-            Breed.makeBreed(id: "beng", name: "Bengal", isFavorite: false)
+            Breed.makeBreed(id: "abys", name: "Abyssinian"),
+            Breed.makeBreed(id: "beng", name: "Bengal")
         ]
         let remote = RemoteBreedsDataSourceSpy(result: .success(remotePage))
         let local = LocalBreedsDataSourceSpy(fetchResult: .success(cachedBreeds))

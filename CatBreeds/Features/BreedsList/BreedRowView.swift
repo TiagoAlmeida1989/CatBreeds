@@ -5,6 +5,7 @@ import Nuke
 
 struct BreedRowView: View {
     let breed: Breed
+    let isFavorite: Bool
     let onFavoriteTap: () -> Void
 
     var body: some View {
@@ -39,9 +40,9 @@ struct BreedRowView: View {
             Spacer()
 
             Button(action: onFavoriteTap) {
-                Image(systemName: breed.isFavorite ? "star.fill" : "star")
+                Image(systemName: isFavorite ? "star.fill" : "star")
                     .font(.title3)
-                    .foregroundStyle(breed.isFavorite ? .yellow : .gray)
+                    .foregroundStyle(isFavorite ? .yellow : .gray)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier(AccessibilityIdentifiers.BreedRow.favouriteButton(breed.id))

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Breed: Identifiable, Hashable, Sendable {
+public struct Breed: Identifiable, Hashable, Equatable, Sendable {
     public let id: String
     public let name: String
     public let origin: String
@@ -8,7 +8,6 @@ public struct Breed: Identifiable, Hashable, Sendable {
     public let description: String
     public let lifeSpan: Lifespan
     public let image: BreedImage?
-    public var isFavorite: Bool
 
     public init(
         id: String,
@@ -17,8 +16,7 @@ public struct Breed: Identifiable, Hashable, Sendable {
         temperament: String,
         description: String,
         lifeSpan: Lifespan,
-        image: BreedImage?,
-        isFavorite: Bool = false
+        image: BreedImage?
     ) {
         self.id = id
         self.name = name
@@ -27,20 +25,6 @@ public struct Breed: Identifiable, Hashable, Sendable {
         self.description = description
         self.lifeSpan = lifeSpan
         self.image = image
-        self.isFavorite = isFavorite
-    }
-}
-
-extension Breed: Equatable {
-    nonisolated public static func == (lhs: Breed, rhs: Breed) -> Bool {
-        lhs.id == rhs.id &&
-        lhs.name == rhs.name &&
-        lhs.origin == rhs.origin &&
-        lhs.temperament == rhs.temperament &&
-        lhs.description == rhs.description &&
-        lhs.lifeSpan == rhs.lifeSpan &&
-        lhs.image == rhs.image &&
-        lhs.isFavorite == rhs.isFavorite
     }
 }
 

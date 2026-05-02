@@ -27,9 +27,8 @@ struct AppFeatureTests {
     func taskLoadsFavoritesAndSyncsThemIntoBreedsList() async {
         let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
         let bengal = Breed.makeBreed(id: "beng", name: "Bengal")
-        let favoriteAbyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: true)
 
-        let spy = FavoritesPersistenceSpy(fetchResult: .success([favoriteAbyssinian]))
+        let spy = FavoritesPersistenceSpy(fetchResult: .success([abyssinian]))
         let store = makeStore(
             breedsListBreeds: [abyssinian, bengal],
             spy: spy
@@ -37,9 +36,10 @@ struct AppFeatureTests {
 
         await store.send(.task)
 
-        await store.receive(.favoritesLoaded(.success([favoriteAbyssinian]))) {
-            $0.favorites.breeds = [favoriteAbyssinian]
-            $0.breedsList.breeds[0].isFavorite = true
+        await store.receive(.favoritesLoaded(.success([abyssinian]))) {
+            $0.favorites.breeds = [abyssinian]
+            $0.favoriteIDs = [abyssinian.id]
+            $0.breedsList.favoriteIDs = [abyssinian.id]
         }
 
         #expect(await spy.fetchFavoritesCallCount() == 1)
@@ -66,8 +66,7 @@ struct AppFeatureTests {
 
     @Test
     func togglingBreedFavoriteOnAddsItToFavoritesAndPersistsIt() async {
-        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: false)
-        let favoritedAbyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: true)
+        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
         let spy = FavoritesPersistenceSpy()
         let store = makeStore(
             breedsListBreeds: [abyssinian],
@@ -75,53 +74,49 @@ struct AppFeatureTests {
         )
 
         await store.send(.breedsList(.favoriteButtonTapped(abyssinian.id))) {
-            $0.breedsList.breeds = [favoritedAbyssinian]
-            $0.favorites.breeds = [favoritedAbyssinian]
+            $0.breedsList.favoriteIDs = [abyssinian.id]
+            $0.favoriteIDs = [abyssinian.id]
+            $0.favorites.breeds = [abyssinian]
         }
 
         await store.finish()
 
-        #expect(await spy.savedFavorites() == [favoritedAbyssinian])
+        #expect(await spy.savedFavorites() == [abyssinian])
         #expect(await spy.removedFavoriteIDs() == [])
     }
 
     @Test
     func togglingBreedFavoriteOffRemovesItFromFavoritesAndPersistsRemoval() async {
-        let favoriteAbyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: true)
-        let unfavoritedAbyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: false)
+        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
         let spy = FavoritesPersistenceSpy()
         let store = makeStore(
-            breedsListBreeds: [favoriteAbyssinian],
-            favoritesBreeds: [favoriteAbyssinian],
+            breedsListBreeds: [abyssinian],
+            favoritesBreeds: [abyssinian],
             spy: spy
         )
 
-        await store.send(.breedsList(.favoriteButtonTapped(favoriteAbyssinian.id))) {
-            $0.breedsList.breeds = [unfavoritedAbyssinian]
+        await store.send(.breedsList(.favoriteButtonTapped(abyssinian.id))) {
+            $0.breedsList.favoriteIDs = []
+            $0.favoriteIDs = []
             $0.favorites.breeds = []
         }
 
         await store.finish()
 
         #expect(await spy.savedFavorites() == [])
-        #expect(await spy.removedFavoriteIDs() == [favoriteAbyssinian.id])
+        #expect(await spy.removedFavoriteIDs() == [abyssinian.id])
     }
 
     @Test
-    func breedsListResponsePreservesLoadedFavorites() async {
-        let favoriteAbyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: true)
-        let page = makeBreedsPage(
-            breeds: [
-                Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: false),
-                Breed.makeBreed(id: "beng", name: "Bengal", isFavorite: false)
-            ],
-            hasNextPage: true
-        )
-        let store = makeStore(favoritesBreeds: [favoriteAbyssinian])
+    func breedsListResponseSyncsFavoriteIDsIntoBreedsList() async {
+        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
+        let bengal = Breed.makeBreed(id: "beng", name: "Bengal")
+        let page = makeBreedsPage(breeds: [abyssinian, bengal], hasNextPage: true)
+        let store = makeStore(favoritesBreeds: [abyssinian])
 
         await store.send(.breedsList(.breedsResponse(.success(page), .initial))) {
             $0.breedsList.breeds = page.breeds
-            $0.breedsList.breeds[0].isFavorite = true
+            $0.breedsList.favoriteIDs = [abyssinian.id]
             $0.breedsList.nextPage = 1
             $0.breedsList.canLoadMore = true
             $0.breedsList.loadState = .idle
@@ -132,23 +127,23 @@ struct AppFeatureTests {
 
     @Test
     func removingFavoriteFromFavoritesFeatureUpdatesBreedsListAndPersistsRemoval() async {
-        let favoriteAbyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: true)
-        let unfavoritedAbyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian", isFavorite: false)
+        let abyssinian = Breed.makeBreed(id: "abys", name: "Abyssinian")
         let spy = FavoritesPersistenceSpy()
         let store = makeStore(
-            breedsListBreeds: [favoriteAbyssinian, .bengal],
-            favoritesBreeds: [favoriteAbyssinian],
+            breedsListBreeds: [abyssinian, .bengal],
+            favoritesBreeds: [abyssinian],
             spy: spy
         )
 
-        await store.send(.favorites(.favoriteButtonTapped(favoriteAbyssinian.id))) {
+        await store.send(.favorites(.favoriteButtonTapped(abyssinian.id))) {
             $0.favorites.breeds = []
-            $0.breedsList.breeds = [unfavoritedAbyssinian, .bengal]
+            $0.favoriteIDs = []
+            $0.breedsList.favoriteIDs = []
         }
 
         await store.finish()
 
-        #expect(await spy.removedFavoriteIDs() == [favoriteAbyssinian.id])
+        #expect(await spy.removedFavoriteIDs() == [abyssinian.id])
     }
 }
 
@@ -163,6 +158,8 @@ private extension AppFeatureTests {
         state.selectedTab = selectedTab
         state.breedsList.breeds = breedsListBreeds
         state.favorites.breeds = favoritesBreeds
+        state.favoriteIDs = Set(favoritesBreeds.map(\.id))
+        state.breedsList.favoriteIDs = state.favoriteIDs
 
         let store = TestStore(initialState: state) {
             AppFeature()
@@ -206,16 +203,7 @@ private actor FavoritesPersistenceSpy {
         removedFavoriteIDsValue.append(id)
     }
 
-    func fetchFavoritesCallCount() -> Int {
-        fetchFavoritesCallCountValue
-    }
-
-    func savedFavorites() -> [Breed] {
-        savedFavoritesValue
-    }
-
-    func removedFavoriteIDs() -> [String] {
-        removedFavoriteIDsValue
-    }
+    func fetchFavoritesCallCount() -> Int { fetchFavoritesCallCountValue }
+    func savedFavorites() -> [Breed] { savedFavoritesValue }
+    func removedFavoriteIDs() -> [String] { removedFavoriteIDsValue }
 }
-

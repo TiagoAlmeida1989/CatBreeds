@@ -2,7 +2,7 @@ import CatBreedsCore
 import Foundation
 
 enum CatBreedMapper {
-    static func map(_ dto: CatBreedDTO, isFavorite: Bool = false) -> Breed {
+    static func map(_ dto: CatBreedDTO) -> Breed {
         Breed(
             id: dto.id,
             name: dto.name,
@@ -17,8 +17,7 @@ enum CatBreedMapper {
                     width: $0.width,
                     height: $0.height
                 )
-            },
-            isFavorite: isFavorite
+            }
         )
     }
 }

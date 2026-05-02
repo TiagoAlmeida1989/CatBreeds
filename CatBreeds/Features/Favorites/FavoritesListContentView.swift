@@ -19,6 +19,7 @@ struct FavoritesListContentView: View {
                 NavigationLink(value: breed) {
                     BreedRowView(
                         breed: breed,
+                        isFavorite: true,
                         onFavoriteTap: {
                             onFavoriteTap(breed.id)
                         }

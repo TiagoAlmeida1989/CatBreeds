@@ -3,6 +3,7 @@ import SwiftUI
 
 struct BreedsListContentView: View {
     let breeds: [Breed]
+    let favoriteIDs: Set<Breed.ID>
     let paginationFooterState: PaginationFooterState
     let onBreedAppear: (Breed) -> Void
     let onFavoriteTap: (Breed.ID) -> Void
@@ -13,6 +14,7 @@ struct BreedsListContentView: View {
             NavigationLink(value: breed.id) {
                 BreedRowView(
                     breed: breed,
+                    isFavorite: favoriteIDs.contains(breed.id),
                     onFavoriteTap: {
                         onFavoriteTap(breed.id)
                     }

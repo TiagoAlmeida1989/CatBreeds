@@ -27,18 +27,12 @@ struct FavoritesView: View {
         }
         .navigationTitle("Favorites")
         .navigationDestination(for: Breed.self) { selectedBreed in
-            let breed = store.breeds.first {
-                $0.id == selectedBreed.id
-            } ?? {
-                var removedBreed = selectedBreed
-                removedBreed.isFavorite = false
-                return removedBreed
-            }()
-
+            let breed = store.breeds.first { $0.id == selectedBreed.id } ?? selectedBreed
             BreedDetailView(
                 breed: breed,
+                isFavorite: store.breeds.contains(where: { $0.id == selectedBreed.id }),
                 onFavoriteTap: {
-                    store.send(.favoriteButtonTapped(breed.id))
+                    store.send(.favoriteButtonTapped(selectedBreed.id))
                 }
             )
         }

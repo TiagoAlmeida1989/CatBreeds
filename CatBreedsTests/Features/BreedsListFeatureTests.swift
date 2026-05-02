@@ -140,11 +140,11 @@ final class BreedsListFeatureTests: XCTestCase {
         }
 
         await store.send(.favoriteButtonTapped(Breed.abyssinian.id)) {
-            $0.breeds[0].isFavorite = true
+            $0.favoriteIDs = [Breed.abyssinian.id]
         }
 
         await store.send(.favoriteButtonTapped(Breed.abyssinian.id)) {
-            $0.breeds[0].isFavorite = false
+            $0.favoriteIDs = []
         }
     }
 

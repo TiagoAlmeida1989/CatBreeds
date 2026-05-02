@@ -47,8 +47,7 @@ final class CachedBreedEntity {
                 url: imageURLString.flatMap(URL.init(string:)),
                 width: imageWidth,
                 height: imageHeight
-            ),
-            isFavorite: false
+            )
         )
     }
 }

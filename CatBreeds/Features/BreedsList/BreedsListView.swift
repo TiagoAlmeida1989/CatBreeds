@@ -47,6 +47,7 @@ struct BreedsListView: View {
     private var contentRows: some View {
         BreedsListContentView(
             breeds: store.filteredBreeds,
+            favoriteIDs: store.favoriteIDs,
             paginationFooterState: store.paginationFooterState,
             onBreedAppear: { breed in
                 store.send(.loadNextPageIfNeeded(breed))
@@ -100,6 +101,7 @@ struct BreedsListView: View {
         if let breed = store.breeds.first(where: { $0.id == breedID }) {
             BreedDetailView(
                 breed: breed,
+                isFavorite: store.favoriteIDs.contains(breedID),
                 onFavoriteTap: {
                     store.send(.favoriteButtonTapped(breed.id))
                 }
