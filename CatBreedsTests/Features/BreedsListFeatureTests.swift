@@ -38,7 +38,7 @@ final class BreedsListFeatureTests: XCTestCase {
         XCTAssertEqual(store.state.viewState, .content)
     }
 
-    func testInitialLoadFailure() async {
+    func testInitialLoadFailureWithNetworkError() async {
         let store = TestStore(
             initialState: BreedsListFeature.State()
         ) {
@@ -46,18 +46,62 @@ final class BreedsListFeatureTests: XCTestCase {
         }
 
         store.dependencies.breedsClient.fetchBreeds = { _, _ in
-            throw APIError.requestFailed
+            throw APIError.networkUnavailable
         }
 
         await store.send(.task) {
             $0.loadState = .loading
         }
 
-        await store.receive(.breedsResponse(.failure(.requestFailed), .initial)) {
-            $0.loadState = .failed("Could not load cat breeds.")
+        await store.receive(.breedsResponse(.failure(.networkUnavailable), .initial)) {
+            $0.loadState = .failed(APIError.networkUnavailable.userMessage)
         }
 
-        XCTAssertEqual(store.state.viewState, .error("Could not load cat breeds."))
+        XCTAssertEqual(store.state.viewState, .error(APIError.networkUnavailable.userMessage))
+    }
+
+    func testInitialLoadFailureWithTimeout() async {
+        let store = TestStore(
+            initialState: BreedsListFeature.State()
+        ) {
+            BreedsListFeature()
+        }
+
+        store.dependencies.breedsClient.fetchBreeds = { _, _ in
+            throw APIError.timeout
+        }
+
+        await store.send(.task) {
+            $0.loadState = .loading
+        }
+
+        await store.receive(.breedsResponse(.failure(.timeout), .initial)) {
+            $0.loadState = .failed(APIError.timeout.userMessage)
+        }
+
+        XCTAssertEqual(store.state.viewState, .error(APIError.timeout.userMessage))
+    }
+
+    func testInitialLoadFailureWithServerError() async {
+        let store = TestStore(
+            initialState: BreedsListFeature.State()
+        ) {
+            BreedsListFeature()
+        }
+
+        store.dependencies.breedsClient.fetchBreeds = { _, _ in
+            throw APIError.unexpectedStatusCode(503)
+        }
+
+        await store.send(.task) {
+            $0.loadState = .loading
+        }
+
+        await store.receive(.breedsResponse(.failure(.unexpectedStatusCode(503)), .initial)) {
+            $0.loadState = .failed(APIError.unexpectedStatusCode(503).userMessage)
+        }
+
+        XCTAssertEqual(store.state.viewState, .error(APIError.unexpectedStatusCode(503).userMessage))
     }
 
     func testSearchFiltering() async {
@@ -155,16 +199,16 @@ final class BreedsListFeatureTests: XCTestCase {
         }
 
         store.dependencies.breedsClient.fetchBreeds = { _, _ in
-            throw APIError.requestFailed
+            throw APIError.networkUnavailable
         }
 
         await store.send(.loadNextPageIfNeeded(.abyssinian)) {
             $0.paginationFooterState = .loading
         }
 
-        await store.receive(.breedsResponse(.failure(.requestFailed), .nextPage)) {
+        await store.receive(.breedsResponse(.failure(.networkUnavailable), .nextPage)) {
             $0.loadState = .idle
-            $0.paginationFooterState = .failed("Could not load more breeds.")
+            $0.paginationFooterState = .failed(APIError.networkUnavailable.userMessage)
         }
 
         XCTAssertEqual(store.state.breeds, [.abyssinian])

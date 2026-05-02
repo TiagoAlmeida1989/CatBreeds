@@ -14,14 +14,8 @@ struct DefaultCatBreedsRemoteDataSource: CatBreedsRemoteDataSource {
 
     func fetchBreeds(page: Int, limit: Int) async throws -> BreedsPage {
         let endpoint = CatBreedsEndpoint.breeds(page: page, limit: limit)
-
-        do {
-            let dtos: [CatBreedDTO] = try await apiClient.request(endpoint)
-            let breeds = dtos.map { CatBreedMapper.map($0) }
-            let hasNextPage = dtos.count == limit
-            return BreedsPage(breeds: breeds, hasNextPage: hasNextPage)
-        } catch {
-            throw error
-        }
+        let dtos: [CatBreedDTO] = try await apiClient.request(endpoint)
+        let breeds = dtos.map { CatBreedMapper.map($0) }
+        return BreedsPage(breeds: breeds, hasNextPage: dtos.count == limit)
     }
 }

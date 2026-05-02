@@ -38,8 +38,6 @@ struct BreedsListFeature {
 
     private enum Constants {
         static let pageSize = 10
-        static let initialLoadErrorMessage = "Could not load cat breeds."
-        static let nextPageErrorMessage = "Could not load more breeds."
     }
 
     // MARK: - State
@@ -142,14 +140,14 @@ struct BreedsListFeature {
             paginationFooterState = .hidden
         }
 
-        mutating func applyFailure(loadType: BreedsListLoadType) {
+        mutating func applyFailure(_ error: APIError, loadType: BreedsListLoadType) {
             switch loadType {
             case .initial, .refresh:
-                loadState = .failed(Constants.initialLoadErrorMessage)
+                loadState = .failed(error.userMessage)
 
             case .nextPage:
                 loadState = .idle
-                paginationFooterState = .failed(Constants.nextPageErrorMessage)
+                paginationFooterState = .failed(error.userMessage)
             }
         }
 
@@ -254,8 +252,8 @@ struct BreedsListFeature {
 
             // MARK: - Response Failure
 
-            case let .breedsResponse(.failure, loadType):
-                state.applyFailure(loadType: loadType)
+            case let .breedsResponse(.failure(error), loadType):
+                state.applyFailure(error, loadType: loadType)
                 return .none
             }
         }
@@ -269,13 +267,12 @@ struct BreedsListFeature {
     ) -> Effect<Action> {
         .run { send in
             do {
-                let result = try await breedsClient.fetchBreeds(
-                    page,
-                    Constants.pageSize
-                )
+                let result = try await breedsClient.fetchBreeds(page, Constants.pageSize)
                 await send(.breedsResponse(.success(result), type))
+            } catch let error as APIError {
+                await send(.breedsResponse(.failure(error), type))
             } catch {
-                await send(.breedsResponse(.failure(.requestFailed), type))
+                await send(.breedsResponse(.failure(.unknown(.unknown)), type))
             }
         }
     }

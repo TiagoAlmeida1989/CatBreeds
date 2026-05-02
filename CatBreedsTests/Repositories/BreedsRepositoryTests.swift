@@ -62,7 +62,7 @@ struct BreedsRepositoryTests {
     @Test
     func fetchBreedsForFirstPageFallsBackToCacheWhenRemoteFails() async throws {
         let cachedBreeds: [Breed] = [.abyssinian, .bengal]
-        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.requestFailed))
+        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.networkUnavailable))
         let local = LocalBreedsDataSourceSpy(fetchResult: .success(cachedBreeds))
         let repository = makeRepository(remote: remote, local: local)
 
@@ -78,7 +78,7 @@ struct BreedsRepositoryTests {
     @Test
     func fetchBreedsForNextPageFallsBackToCacheWhenRemoteFails() async throws {
         let cachedBreeds: [Breed] = [.maineCoon]
-        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.requestFailed))
+        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.networkUnavailable))
         let local = LocalBreedsDataSourceSpy(fetchResult: .success(cachedBreeds))
         let repository = makeRepository(remote: remote, local: local)
 
@@ -93,7 +93,7 @@ struct BreedsRepositoryTests {
     @Test
     func fetchBreedsForFirstPageFallbackCacheSetsHasNextPageToFalseWhenCacheIsSmallerThanLimit() async throws {
         let cachedBreeds: [Breed] = [.abyssinian]
-        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.requestFailed))
+        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.networkUnavailable))
         let local = LocalBreedsDataSourceSpy(fetchResult: .success(cachedBreeds))
         let repository = makeRepository(remote: remote, local: local)
 
@@ -104,7 +104,7 @@ struct BreedsRepositoryTests {
 
     @Test
     func fetchBreedsForFirstPageThrowsRemoteErrorWhenRemoteFailsAndCacheIsEmpty() async {
-        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.requestFailed))
+        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.networkUnavailable))
         let local = LocalBreedsDataSourceSpy(fetchResult: .success([]))
         let repository = makeRepository(remote: remote, local: local)
 
@@ -112,13 +112,13 @@ struct BreedsRepositoryTests {
             _ = try await repository.fetchBreeds(page: 0, limit: 2)
             Issue.record("Expected repository to throw")
         } catch {
-            #expect(error as? APIError == .requestFailed)
+            #expect(error as? APIError == .networkUnavailable)
         }
     }
 
     @Test
     func fetchBreedsForNextPageThrowsRemoteErrorWhenRemoteFailsAndCacheIsEmpty() async {
-        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.requestFailed))
+        let remote = RemoteBreedsDataSourceSpy(result: .failure(APIError.networkUnavailable))
         let local = LocalBreedsDataSourceSpy(fetchResult: .success([]))
         let repository = makeRepository(remote: remote, local: local)
 
@@ -126,7 +126,7 @@ struct BreedsRepositoryTests {
             _ = try await repository.fetchBreeds(page: 1, limit: 2)
             Issue.record("Expected repository to throw")
         } catch {
-            #expect(error as? APIError == .requestFailed)
+            #expect(error as? APIError == .networkUnavailable)
         }
     }
 }

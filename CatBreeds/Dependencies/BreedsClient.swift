@@ -15,7 +15,7 @@ extension BreedsClient: DependencyKey {
     }
 
     static let testValue = BreedsClient(
-        fetchBreeds: { _, _ in throw APIError.requestFailed }
+        fetchBreeds: { _, _ in throw APIError.networkUnavailable }
     )
 }
 
