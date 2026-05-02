@@ -18,14 +18,6 @@ struct FavoritesFeature {
             breeds.averageLifespanFormatted
         }
 
-        mutating func removeFavorite(id: Breed.ID) {
-            breeds.removeAll { $0.id == id }
-
-            if detail?.breed.id == id {
-                detail?.isFavorite = false
-            }
-        }
-
         mutating func openDetail(for breed: Breed) {
             detail = BreedDetailFeature.State(
                 breed: breed,
@@ -52,8 +44,7 @@ struct FavoritesFeature {
                 state.openDetail(for: breed)
                 return .none
 
-            case let .favoriteButtonTapped(id):
-                state.removeFavorite(id: id)
+            case .favoriteButtonTapped:
                 return .none
 
             case let .detail(.presented(.delegate(.favoriteToggled(id)))):

@@ -129,7 +129,7 @@ final class BreedsListFeatureTests: XCTestCase {
         XCTAssertEqual(store.state.viewState, .emptySearch)
     }
 
-    func testFavoriteToggle() async {
+    func testFavoriteButtonTappedProducesNoLocalMutation() async {
         var state = BreedsListFeature.State()
         state.breeds = [.abyssinian]
 
@@ -139,13 +139,9 @@ final class BreedsListFeatureTests: XCTestCase {
             BreedsListFeature()
         }
 
-        await store.send(.favoriteButtonTapped(Breed.abyssinian.id)) {
-            $0.favoriteIDs = [Breed.abyssinian.id]
-        }
-
-        await store.send(.favoriteButtonTapped(Breed.abyssinian.id)) {
-            $0.favoriteIDs = []
-        }
+        // BreedsListFeature emits intent only; AppFeature owns the toggle.
+        await store.send(.favoriteButtonTapped(Breed.abyssinian.id))
+        await store.send(.favoriteButtonTapped(Breed.abyssinian.id))
     }
 
     func testPaginationSuccess() async {

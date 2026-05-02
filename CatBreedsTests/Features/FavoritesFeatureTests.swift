@@ -15,34 +15,14 @@ final class FavoritesFeatureTests: XCTestCase {
         XCTAssertNil(state.averageLifespan)
     }
 
-    // MARK: - Removing Favorites
+    // MARK: - Favorite intent
 
-    func testFavoriteButtonTappedRemovesBreed() async {
-        let store = makeStore(
-            breeds: [.abyssinian, .bengal]
-        )
+    func testFavoriteButtonTappedProducesNoLocalMutation() async {
+        let store = makeStore(breeds: [.abyssinian, .bengal])
 
-        await store.send(.favoriteButtonTapped(Breed.abyssinian.id)) {
-            $0.breeds = [.bengal]
-        }
-    }
-
-    func testFavoriteButtonTappedWithUnknownIDDoesNothing() async {
-        let store = makeStore(
-            breeds: [.abyssinian, .bengal]
-        )
-
-        await store.send(.favoriteButtonTapped("unknown-id"))
-    }
-
-    func testFavoriteButtonTappedRemovesOnlyMatchingBreed() async {
-        let store = makeStore(
-            breeds: [.abyssinian, .bengal, .maineCoon]
-        )
-
-        await store.send(.favoriteButtonTapped(Breed.bengal.id)) {
-            $0.breeds = [.abyssinian, .maineCoon]
-        }
+        // FavoritesFeature emits intent only; AppFeature owns removal from breeds.
+        await store.send(.favoriteButtonTapped(Breed.abyssinian.id))
+        await store.send(.favoriteButtonTapped(Breed.bengal.id))
     }
 
     // MARK: - Average Lifespan

@@ -153,14 +153,6 @@ struct BreedsListFeature {
             }
         }
 
-        mutating func toggleFavorite(for id: Breed.ID) {
-            if favoriteIDs.contains(id) {
-                favoriteIDs.remove(id)
-            } else {
-                favoriteIDs.insert(id)
-            }
-        }
-
         mutating func setDetail(breed: Breed, isFavorite: Bool) {
             detail = BreedDetailFeature.State(breed: breed, isFavorite: isFavorite)
         }
@@ -260,8 +252,7 @@ struct BreedsListFeature {
 
             // MARK: - Favorite
 
-            case let .favoriteButtonTapped(id):
-                state.toggleFavorite(for: id)
+            case .favoriteButtonTapped:
                 return .none
 
             // MARK: - Response Success

@@ -43,8 +43,13 @@ struct AppFeature {
                 return .none
 
             case let .breedsList(.favoriteButtonTapped(id)):
-                let isNowFavorite = state.breedsList.favoriteIDs.contains(id)
-                state.favoriteIDs = state.breedsList.favoriteIDs
+                let isNowFavorite = !state.favoriteIDs.contains(id)
+                if isNowFavorite {
+                    state.favoriteIDs.insert(id)
+                } else {
+                    state.favoriteIDs.remove(id)
+                }
+                state.breedsList.favoriteIDs = state.favoriteIDs
 
                 if isNowFavorite {
                     guard let breed = state.breedsList.breeds.first(where: { $0.id == id }) else {
@@ -79,6 +84,7 @@ struct AppFeature {
             case let .favorites(.favoriteButtonTapped(id)):
                 state.favoriteIDs.remove(id)
                 state.breedsList.favoriteIDs = state.favoriteIDs
+                state.favorites.breeds.removeAll { $0.id == id }
                 return .run { _ in
                     do {
                         try await favoritesPersistenceClient.removeFavorite(id)
