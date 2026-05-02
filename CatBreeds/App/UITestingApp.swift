@@ -1,9 +1,10 @@
+#if DEBUG
 import CatBreedsCore
 import SwiftUI
 import SwiftData
 import ComposableArchitecture
 
-struct CatBreedsApp: App {
+struct UITestingApp: App {
 
     init() {
         ImagePipelineClient.configure()
@@ -14,9 +15,13 @@ struct CatBreedsApp: App {
             AppView(
                 store: Store(initialState: AppFeature.State()) {
                     AppFeature()
+                } withDependencies: {
+                    $0.breedsClient = .uiTestingValue
+                    $0.favoritesPersistenceClient = .uiTestingValue
                 }
             )
         }
-        .modelContainer(SwiftDataStack.shared)
+        .modelContainer(try! ModelContainer(for: Schema([])))
     }
 }
+#endif

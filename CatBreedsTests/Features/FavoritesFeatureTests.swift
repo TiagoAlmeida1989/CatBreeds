@@ -58,7 +58,7 @@ final class FavoritesFeatureTests: XCTestCase {
             breeds: [.abyssinian, .bengal]
         )
 
-        XCTAssertEqual(state.averageLifespan, 14.0)
+        XCTAssertEqual(state.averageLifespan, "14 years")
     }
 
     func testAverageLifespanIgnoresUnknownLifespans() {
@@ -66,7 +66,7 @@ final class FavoritesFeatureTests: XCTestCase {
             breeds: [.abyssinian, .unknownLifespan]
         )
 
-        XCTAssertEqual(state.averageLifespan, 14.5)
+        XCTAssertEqual(state.averageLifespan, "14,5 years")
     }
 
     func testAverageLifespanReturnsNilWhenAllLifespansAreUnknown() {

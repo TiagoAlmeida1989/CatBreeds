@@ -1,6 +1,7 @@
 # CatBreeds
 
-![CI](https://github.com/TiagoAlmeida1989/CatBreeds/actions/workflows/ci.yml/badge.svg)
+![Unit Tests](https://github.com/TiagoAlmeida1989/CatBreeds/actions/workflows/unit-tests.yml/badge.svg)
+![UI Tests](https://github.com/TiagoAlmeida1989/CatBreeds/actions/workflows/ui-tests.yml/badge.svg)
 
 An iOS app built with SwiftUI that lets you explore cat breeds using [The Cat API](https://thecatapi.com/). Browse the full catalogue, search by name, save favourites, and access all previously loaded content even without an internet connection.
 
@@ -132,6 +133,7 @@ The project has three levels of test coverage:
 - **Unit tests** — `FavoritesFeature` reducer logic, including average lifespan edge cases.
 - **Feature integration tests** — `BreedsListFeature` and `AppFeature` are tested using TCA's `TestStore`, which enforces exhaustive assertions on every state change and every received action. This catches any unintended side effect.
 - **Repository tests** — `BreedsRepositoryTests` uses actor-based spies (`RemoteBreedsDataSourceSpy`, `LocalBreedsDataSourceSpy`) to verify the caching and fallback logic in isolation, including: cache invalidation on page 0 success, per-page caching for subsequent pages, offline fallback for any page, and correct `hasNextPage` inference from cache size.
+- **UI tests** — `CatBreedsUITests` uses the Screen Object Model pattern for readable, PO-friendly flow tests. The app is launched with a `UI_TESTING` environment variable that activates a separate `UITestingApp` entry point (isolated via `#if DEBUG`), injecting a JSON-backed `BreedsClient` and an in-memory `FavoritesPersistenceClient` — no network, no SwiftData. All test code is fully separated from production code.
 
 ---
 

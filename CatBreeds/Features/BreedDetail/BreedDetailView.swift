@@ -19,6 +19,7 @@ struct BreedDetailView: View {
                         systemImage: "mappin.and.ellipse",
                         text: breed.origin
                     )
+                    .accessibilityIdentifier(AccessibilityIdentifiers.BreedDetail.originChip)
 
                     BreedDetailInfoSection(
                         title: "Temperament",
@@ -47,6 +48,7 @@ struct BreedDetailView: View {
                     Image(systemName: breed.isFavorite ? "star.fill" : "star")
                         .foregroundStyle(breed.isFavorite ? .yellow : .primary)
                 }
+                .accessibilityIdentifier(AccessibilityIdentifiers.BreedDetail.favouriteButton)
             }
         }
     }

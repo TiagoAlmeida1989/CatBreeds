@@ -44,6 +44,7 @@ struct BreedRowView: View {
                     .foregroundStyle(breed.isFavorite ? .yellow : .gray)
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier(AccessibilityIdentifiers.BreedRow.favouriteButton(breed.id))
         }
         .padding(.vertical, 8)
     }

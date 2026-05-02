@@ -11,6 +11,7 @@ struct FavoritesListContentView: View {
             if let averageLifespan {
                 Section {
                     Text("Average lifespan: \(averageLifespan)")
+                        .accessibilityIdentifier(AccessibilityIdentifiers.Favourites.averageLifespan)
                 }
             }
 

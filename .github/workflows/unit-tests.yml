@@ -1,4 +1,4 @@
-name: CI
+name: Unit Tests
 
 on:
   push:
@@ -29,28 +29,4 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -only-testing:CatBreedsTests \
             -resultBundlePath UnitTestResults \
-            | xcpretty
-
-  ui-tests:
-    name: UI Tests
-    runs-on: macos-15
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create Secrets.xcconfig
-        run: |
-          cat > Secrets.xcconfig <<EOF
-          CAT_API_KEY = ${{ secrets.CAT_API_KEY }}
-          EOF
-
-      - name: Run UI Tests
-        run: |
-          xcodebuild test \
-            -project CatBreeds.xcodeproj \
-            -scheme CatBreeds \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
-            -only-testing:CatBreedsUITests \
-            -resultBundlePath UITestResults \
             | xcpretty

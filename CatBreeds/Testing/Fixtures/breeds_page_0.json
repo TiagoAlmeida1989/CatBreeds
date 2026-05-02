@@ -1,0 +1,62 @@
+[
+  {
+    "id": "abys",
+    "name": "Abyssinian",
+    "origin": "Egypt",
+    "temperament": "Active, Energetic, Independent, Intelligent, Gentle",
+    "description": "The Abyssinian is easy to care for, and a joy to have in your home. They're affectionate cats and love both people and other animals.",
+    "life_span": "14 - 15",
+    "reference_image_id": "0XYvRd7oD",
+    "image": {
+      "id": "0XYvRd7oD",
+      "url": "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
+      "width": 1204,
+      "height": 1445
+    }
+  },
+  {
+    "id": "beng",
+    "name": "Bengal",
+    "origin": "United States",
+    "temperament": "Alert, Agile, Energetic, Demanding, Intelligent",
+    "description": "Bengals are a lot of fun to live with, but they're definitely a cat for an experienced cat owner.",
+    "life_span": "12 - 15",
+    "reference_image_id": "O3btzLlsO",
+    "image": {
+      "id": "O3btzLlsO",
+      "url": "https://cdn2.thecatapi.com/images/O3btzLlsO.jpg",
+      "width": 1280,
+      "height": 855
+    }
+  },
+  {
+    "id": "birm",
+    "name": "Birman",
+    "origin": "France",
+    "temperament": "Affectionate, Active, Gentle, Social",
+    "description": "The Birman is a docile, quiet cat who loves people and will follow his favorite people from room to room.",
+    "life_span": "12 - 16",
+    "reference_image_id": "HOrX5gwLS",
+    "image": {
+      "id": "HOrX5gwLS",
+      "url": "https://cdn2.thecatapi.com/images/HOrX5gwLS.jpg",
+      "width": 1280,
+      "height": 960
+    }
+  },
+  {
+    "id": "ragd",
+    "name": "Ragdoll",
+    "origin": "United States",
+    "temperament": "Calm, Affectionate, Gentle, Easygoing",
+    "description": "The Ragdoll is a large, gentle cat with a calm, easygoing temperament. They are known for their docile and placid behavior.",
+    "life_span": "12 - 17",
+    "reference_image_id": "RysO6gcnX",
+    "image": {
+      "id": "RysO6gcnX",
+      "url": "https://cdn2.thecatapi.com/images/RysO6gcnX.jpg",
+      "width": 1200,
+      "height": 800
+    }
+  }
+]

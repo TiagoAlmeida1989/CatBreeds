@@ -67,6 +67,7 @@ extension FavoritesPersistenceClient: DependencyKey {
         saveFavorite: { _ in },
         removeFavorite: { _ in }
     )
+
 }
 
 extension DependencyValues {
