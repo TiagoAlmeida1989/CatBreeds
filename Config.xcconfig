@@ -3,4 +3,4 @@
 // Override these values per build configuration (Debug/Release/Staging)
 // by creating separate xcconfig files that include this one.
 
-CAT_API_BASE_URL = https://api.thecatapi.com/v1
+CAT_API_BASE_URL = https:$()/api.thecatapi.com/v1

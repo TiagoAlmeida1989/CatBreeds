@@ -13,10 +13,6 @@ extension BreedsClient: DependencyKey {
             fetchBreeds: { try await repository.fetchBreeds(page: $0, limit: $1) }
         )
     }
-
-    static let testValue = BreedsClient(
-        fetchBreeds: { _, _ in throw APIError.networkUnavailable }
-    )
 }
 
 extension DependencyValues {

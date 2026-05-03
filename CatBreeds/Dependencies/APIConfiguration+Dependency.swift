@@ -13,11 +13,6 @@ extension APIConfiguration: DependencyKey {
         }
         return APIConfiguration(baseURL: baseURL, apiKey: apiKey)
     }
-
-    static let testValue = APIConfiguration(
-        baseURL: URL(string: "https://api.thecatapi.com/v1")!,
-        apiKey: "test-api-key"
-    )
 }
 
 extension DependencyValues {

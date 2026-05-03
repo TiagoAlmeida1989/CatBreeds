@@ -36,12 +36,6 @@ extension FavoritesPersistenceClient: DependencyKey {
             removeFavorite: { try await dataSource.removeFavorite(id: $0) }
         )
     }
-
-    static let testValue = FavoritesPersistenceClient(
-        fetchFavorites: { [] },
-        saveFavorite: { _ in },
-        removeFavorite: { _ in }
-    )
 }
 
 extension DependencyValues {
