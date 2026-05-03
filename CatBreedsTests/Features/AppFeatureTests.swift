@@ -115,7 +115,8 @@ struct AppFeatureTests {
         let spy = FavoritesPersistenceSpy()
         var state = AppFeature.State()
         state.breedsList.breeds = [abyssinian]
-        state.breedsList.detail = BreedDetailFeature.State(breed: abyssinian, isFavorite: false)
+        state.breedsList.path.append(.detail(BreedDetailFeature.State(breed: abyssinian, isFavorite: false)))
+        let pathID = state.breedsList.path.ids.first!
 
         let store = TestStore(initialState: state) { AppFeature() }
         store.dependencies.favoritesPersistenceClient.saveFavorite = { breed in
@@ -125,11 +126,11 @@ struct AppFeatureTests {
             try await spy.removeFavorite(id)
         }
 
-        await store.send(.breedsList(.detail(.presented(.favoriteButtonTapped)))) {
-            $0.breedsList.detail?.isFavorite = true
+        await store.send(.breedsList(.path(.element(id: pathID, action: .detail(.favoriteButtonTapped))))) {
+            $0.breedsList.path[id: pathID] = .detail(BreedDetailFeature.State(breed: abyssinian, isFavorite: true))
         }
 
-        await store.receive(.breedsList(.detail(.presented(.delegate(.favoriteToggled(abyssinian.id))))))
+        await store.receive(.breedsList(.path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(abyssinian.id)))))))
 
         await store.receive(.breedsList(.favoriteButtonTapped(abyssinian.id))) {
             $0.favoriteIDs = [abyssinian.id]
@@ -150,7 +151,8 @@ struct AppFeatureTests {
         state.favorites.breeds = [abyssinian]
         state.favoriteIDs = [abyssinian.id]
         state.breedsList.favoriteIDs = [abyssinian.id]
-        state.favorites.detail = BreedDetailFeature.State(breed: abyssinian, isFavorite: true)
+        state.favorites.path.append(.detail(BreedDetailFeature.State(breed: abyssinian, isFavorite: true)))
+        let pathID = state.favorites.path.ids.first!
 
         let store = TestStore(initialState: state) { AppFeature() }
         store.dependencies.favoritesPersistenceClient.saveFavorite = { _ in }
@@ -158,11 +160,11 @@ struct AppFeatureTests {
             try await spy.removeFavorite(id)
         }
 
-        await store.send(.favorites(.detail(.presented(.favoriteButtonTapped)))) {
-            $0.favorites.detail?.isFavorite = false
+        await store.send(.favorites(.path(.element(id: pathID, action: .detail(.favoriteButtonTapped))))) {
+            $0.favorites.path[id: pathID] = .detail(BreedDetailFeature.State(breed: abyssinian, isFavorite: false))
         }
 
-        await store.receive(.favorites(.detail(.presented(.delegate(.favoriteToggled(abyssinian.id))))))
+        await store.receive(.favorites(.path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(abyssinian.id)))))))
 
         await store.receive(.favorites(.favoriteButtonTapped(abyssinian.id))) {
             $0.favorites.breeds = []

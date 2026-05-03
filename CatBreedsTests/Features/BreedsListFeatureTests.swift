@@ -129,6 +129,42 @@ final class BreedsListFeatureTests: XCTestCase {
         XCTAssertEqual(store.state.viewState, .emptySearch)
     }
 
+    // MARK: - Navigation
+
+    func testBreedTappedPushesDetailOnPath() async {
+        var state = BreedsListFeature.State()
+        state.breeds = [.abyssinian]
+        state.favoriteIDs = [Breed.abyssinian.id]
+
+        let store = TestStore(initialState: state) {
+            BreedsListFeature()
+        }
+
+        await store.send(.breedTapped(.abyssinian)) {
+            $0.path.append(.detail(BreedDetailFeature.State(breed: .abyssinian, isFavorite: true)))
+        }
+    }
+
+    func testFavoriteToggledInDetailBubblesUpAsFavoriteButtonTapped() async {
+        var state = BreedsListFeature.State()
+        state.breeds = [.abyssinian]
+        state.path.append(.detail(BreedDetailFeature.State(breed: .abyssinian, isFavorite: false)))
+        let pathID = state.path.ids.first!
+
+        let store = TestStore(initialState: state) {
+            BreedsListFeature()
+        }
+
+        await store.send(.path(.element(id: pathID, action: .detail(.favoriteButtonTapped)))) {
+            $0.path[id: pathID] = .detail(BreedDetailFeature.State(breed: .abyssinian, isFavorite: true))
+        }
+
+        await store.receive(.path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(Breed.abyssinian.id))))))
+        await store.receive(.favoriteButtonTapped(Breed.abyssinian.id))
+    }
+
+    // MARK: - Favorites
+
     func testFavoriteButtonTappedProducesNoLocalMutation() async {
         var state = BreedsListFeature.State()
         state.breeds = [.abyssinian]

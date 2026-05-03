@@ -4,11 +4,16 @@ import ComposableArchitecture
 @Reducer
 struct FavoritesFeature {
 
+    @Reducer
+    enum Path {
+        case detail(BreedDetailFeature)
+    }
+
     @ObservableState
     struct State: Equatable {
         var breeds: [Breed] = []
 
-        @Presents var detail: BreedDetailFeature.State?
+        var path = StackState<Path.State>()
 
         var viewState: ViewState {
             breeds.isEmpty ? .empty : .content
@@ -19,10 +24,7 @@ struct FavoritesFeature {
         }
 
         mutating func openDetail(for breed: Breed) {
-            detail = BreedDetailFeature.State(
-                breed: breed,
-                isFavorite: true
-            )
+            path.append(.detail(BreedDetailFeature.State(breed: breed, isFavorite: true)))
         }
     }
 
@@ -34,7 +36,7 @@ struct FavoritesFeature {
     enum Action: Equatable {
         case breedTapped(Breed)
         case favoriteButtonTapped(Breed.ID)
-        case detail(PresentationAction<BreedDetailFeature.Action>)
+        case path(StackActionOf<Path>)
     }
 
     var body: some Reducer<State, Action> {
@@ -47,15 +49,16 @@ struct FavoritesFeature {
             case .favoriteButtonTapped:
                 return .none
 
-            case let .detail(.presented(.delegate(.favoriteToggled(id)))):
+            case let .path(.element(_, .detail(.delegate(.favoriteToggled(id))))):
                 return .send(.favoriteButtonTapped(id))
 
-            case .detail:
+            case .path:
                 return .none
             }
         }
-        .ifLet(\.$detail, action: \.detail) {
-            BreedDetailFeature()
-        }
+        .forEach(\.path, action: \.path)
     }
 }
+
+extension FavoritesFeature.Path.State: Equatable {}
+extension FavoritesFeature.Path.Action: Equatable {}

@@ -36,6 +36,11 @@ enum PaginationFooterState: Equatable {
 @Reducer
 struct BreedsListFeature {
 
+    @Reducer
+    enum Path {
+        case detail(BreedDetailFeature)
+    }
+
     private enum Constants {
         static let pageSize = 10
     }
@@ -46,7 +51,7 @@ struct BreedsListFeature {
     struct State: Equatable {
         var breeds: [Breed] = []
         var favoriteIDs: Set<Breed.ID> = []
-        @Presents var detail: BreedDetailFeature.State?
+        var path = StackState<Path.State>()
         var searchText = ""
 
         var nextPage = 0
@@ -165,7 +170,7 @@ struct BreedsListFeature {
         case favoriteButtonTapped(Breed.ID)
 
         case breedsResponse(Result<BreedsPage, APIError>, BreedsListLoadType)
-        case detail(PresentationAction<BreedDetailFeature.Action>)
+        case path(StackActionOf<Path>)
     }
 
     // MARK: - Dependencies
@@ -228,13 +233,13 @@ struct BreedsListFeature {
             // MARK: - Detail
 
             case let .breedTapped(breed):
-                state.detail = BreedDetailFeature.State(breed: breed, isFavorite: state.favoriteIDs.contains(breed.id))
+                state.path.append(.detail(BreedDetailFeature.State(breed: breed, isFavorite: state.favoriteIDs.contains(breed.id))))
                 return .none
 
-            case let .detail(.presented(.delegate(.favoriteToggled(id)))):
+            case let .path(.element(_, .detail(.delegate(.favoriteToggled(id))))):
                 return .send(.favoriteButtonTapped(id))
 
-            case .detail:
+            case .path:
                 return .none
 
             // MARK: - Search
@@ -261,9 +266,7 @@ struct BreedsListFeature {
                 return .none
             }
         }
-        .ifLet(\.$detail, action: \.detail) {
-            BreedDetailFeature()
-        }
+        .forEach(\.path, action: \.path)
     }
 
     // MARK: - Private
@@ -284,3 +287,6 @@ struct BreedsListFeature {
         }
     }
 }
+
+extension BreedsListFeature.Path.State: Equatable {}
+extension BreedsListFeature.Path.Action: Equatable {}

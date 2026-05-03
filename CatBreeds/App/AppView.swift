@@ -12,21 +12,17 @@ struct AppView: View {
                 set: { store.send(.selectedTabChanged($0)) }
             )
         ) {
-            NavigationStack {
-                BreedsListView(
-                    store: store.scope(state: \.breedsList, action: \.breedsList)
-                )
-            }
+            BreedsListView(
+                store: store.scope(state: \.breedsList, action: \.breedsList)
+            )
             .tabItem {
                 Label("Breeds", systemImage: "cat")
             }
             .tag(AppTab.breeds)
 
-            NavigationStack {
-                FavoritesView(
-                    store: store.scope(state: \.favorites, action: \.favorites)
-                )
-            }
+            FavoritesView(
+                store: store.scope(state: \.favorites, action: \.favorites)
+            )
             .tabItem {
                 Label("Favorites", systemImage: "star.fill")
             }

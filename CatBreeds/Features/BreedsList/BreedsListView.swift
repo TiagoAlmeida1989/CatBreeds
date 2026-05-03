@@ -6,43 +6,45 @@ struct BreedsListView: View {
     @Bindable var store: StoreOf<BreedsListFeature>
 
     var body: some View {
-        List {
-            switch store.viewState {
-            case .loading:
-                loadingState
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+            List {
+                switch store.viewState {
+                case .loading:
+                    loadingState
 
-            case let .error(message):
-                errorState(message)
+                case let .error(message):
+                    errorState(message)
 
-            case .emptySearch:
-                emptySearchState
+                case .emptySearch:
+                    emptySearchState
 
-            case .empty:
-                emptyState
+                case .empty:
+                    emptyState
 
-            case .content:
-                contentRows
+                case .content:
+                    contentRows
+                }
             }
-        }
-        .listStyle(.plain)
-        .animation(.easeInOut(duration: 0.25), value: store.paginationFooterState)
-        .refreshable {
-            await store.send(.refreshPulled).finish()
-        }
-        .navigationTitle("Cat Breeds")
-        .searchable(
-            text: Binding(
-                get: { store.searchText },
-                set: { store.send(.searchTextChanged($0)) }
+            .listStyle(.plain)
+            .animation(.easeInOut(duration: 0.25), value: store.paginationFooterState)
+            .refreshable {
+                await store.send(.refreshPulled).finish()
+            }
+            .navigationTitle("Cat Breeds")
+            .searchable(
+                text: Binding(
+                    get: { store.searchText },
+                    set: { store.send(.searchTextChanged($0)) }
+                )
             )
-        )
-        .navigationDestination(
-            item: $store.scope(state: \.detail, action: \.detail)
-        ) { detailStore in
-            BreedDetailView(store: detailStore)
-        }
-        .task {
-            await store.send(.task).finish()
+            .task {
+                await store.send(.task).finish()
+            }
+        } destination: { store in
+            switch store.case {
+            case .detail(let detailStore):
+                BreedDetailView(store: detailStore)
+            }
         }
     }
 

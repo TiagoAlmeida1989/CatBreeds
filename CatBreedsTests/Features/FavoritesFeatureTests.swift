@@ -15,6 +15,16 @@ final class FavoritesFeatureTests: XCTestCase {
         XCTAssertNil(state.averageLifespan)
     }
 
+    // MARK: - Navigation
+
+    func testBreedTappedPushesDetailOnPath() async {
+        let store = makeStore(breeds: [.abyssinian])
+
+        await store.send(.breedTapped(.abyssinian)) {
+            $0.path.append(.detail(BreedDetailFeature.State(breed: .abyssinian, isFavorite: true)))
+        }
+    }
+
     // MARK: - Favorite intent
 
     func testFavoriteButtonTappedProducesNoLocalMutation() async {
